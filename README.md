@@ -1,6 +1,7 @@
 # costnotify
 
-This repo develops an AWS Lambda function written in Python that sends billing notifications to AWS account managers via email. 
+This repo develops an AWS Lambda function written in Python that sends billing notifications to AWS account managers via email
+[.](https://github.com/robfatland/ops) 
 It was originally built to operate on DLT-supplied cost logging. As that has proven sporadic we are re-writing it to work
 against hourly billing records accumulated by "CloudChekr" in an S3 bucket called copydbr.
 
