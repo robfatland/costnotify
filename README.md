@@ -5,7 +5,7 @@ This repo develops an AWS Lambda function written in Python that sends billing n
 It was originally built to operate on DLT-supplied cost logging. As that has proven sporadic we are re-writing it to work
 against hourly billing records accumulated by "CloudChekr" in an S3 bucket called copydbr.
 
-## Warnings
+## Warnings 
 
 - Don't put the billing file in this repo; it could contain info we don't want public
   - Rather suggest create an above-repo directory called ../billingdata
@@ -17,6 +17,16 @@ against hourly billing records accumulated by "CloudChekr" in an S3 bucket calle
 - See yesterday's burn today in an email header
 - Track grantee spend versus grant
 
+## Before you begin 
+
+- You will need a working Python environment where you can download the data file and try stuff. 
+  - There are three choices available to you
+    - Install Anaconda (or Miniconda) for example from Lesson 1 [here](https://carpentrieslab.github.io/python-aos-lesson/)
+    - Get a JupyterHub account on Port Cormorack by request sent to Rob
+    - Some other path that is not the above two
+- You will probably want to work from the Python `csv` package as shown in the sample code found here
+  - Once you have the environment, the `csv` package and the February billing data you can join the coding contest described below.
+  
 ## Set up the bucket and the IAM User 
 
 - copydbr
