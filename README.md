@@ -24,8 +24,11 @@ against hourly billing records accumulated by "CloudChekr" in an S3 bucket calle
     - Install Anaconda (or Miniconda) for example from Lesson 1 [here](https://carpentrieslab.github.io/python-aos-lesson/)
     - Get a JupyterHub account on Port Cormorack by request sent to Rob
     - Some other path that is not the above two
-- You will probably want to work from the Python `csv` package as shown in the sample code found here
-  - Once you have the environment, the `csv` package and the February billing data you can join the coding contest described below.
+- You will probably want to work from the Python `csv` package as shown in the `analysis.py` program
+  - Again you need:
+    - A Python environment
+    - The `csv` package installed there
+    - The February billing data downloaded from the S3 `copydbr` bucket
   
 ## Set up the bucket and the IAM User 
 
