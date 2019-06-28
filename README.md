@@ -1,8 +1,69 @@
 # costnotify
 
-This repo develops an AWS Lambda function written in Python that sends billing notifications to AWS account managers via email
+This repo revises the cost notification email with yesterday's spend on AWS in the subject.
+Details are in the body of the email. 
+
+
+The method is to use an AWS Lambda (Python) to parse/digest data from a billing file called
+
+```
+111111111111-aws-billing-detailed-line-items-with-resources-and-tags-2019-02.csv.zip
+```
+
+The code to open and parse the code is something like this: 
+
+```
+import json
+import os
+import boto3
+import zipfile
+import csv
+import datetime
+import urllib
+
+accountnumber = os.environ['accountnumber']
+dayintervalStart = os.environ['dayintervalStart']
+dayintervalEnd = os.environ['dayintervalEnd']
+
+yearOfFile = '2019'
+monthOfFile = '02'
+bucketName = 'copydbr-someidentifier'
+
+s3_resource = boto3.resource('s3')
+f = accountnumber +                                                   \
+    '-aws-billing-detailed-line-items-with-resources-and-tags-' +     \
+    yearOfFile + '-' + monthOfFile + '.csv.zip'
+s3_resource.Object(bucketName, f).download_file('/tmp/' + f)        # copy of file local to the lambda environment
+zip_ref = zipfile.ZipFile('/tmp/'+ f, 'r')
+zip_ref.extractall('/tmp/')
+csv_filename = f.split('.')[0]+'.csv'
+with open('/tmp/' + csv_filename, 'r', newline = '\n') as csvfile:
+    lines = csv.reader(csvfile, delimiter=',', quotechar='"')
+    for idx, line in enumerate(lines):
+        if idx == 0:
+            col_dict = {}
+            for i, n in enumerate(line): col_dict.update({n.strip(): i})
+            # get index for tags (user:Name, user:Project)
+            # idx_tag1, idx_tag2, idx_tag3, idx_tag4 = \
+            #     col_dict['user:Owner'], col_dict['user:Project'], col_dict['user:ProjectName'], col_dict['user:Name']
+            # get index for datetime
+            # idx_dt = col_dict['UsageEndDate']
+            # get index for ProductName
+            # idx_pname = col_dict['ProductName']
+            # 'use quantity' has two types: blended and unblended
+            # idx_dollar_blend = col_dict['BlendedCost']
+            # idx_dollar_unblend = col_dict['UnBlendedCost']
+            # for untagged resources
+            # idx_resource = col_dict['ResourceId']
+        else:
+            # parse a line of the file...
+            x = 0 # and so on 
+```
+
+
+record sends billing notifications to AWS account managers via email
 [.](https://github.com/robfatland/ops) 
-It was originally built to operate on DLT-supplied cost logging. As that has proven sporadic we are re-writing it to work
+It was originally built to operate on DLT-supplied cost logging. As thathas proven sporadic we are re-writing it to work
 against hourly billing records accumulated by "CloudChekr" in an S3 bucket called copydbr.
 
 ## Warnings 
