@@ -30,10 +30,19 @@ automatically. In our case this action will be triggered by a Lambda function
 
 
 
-## S3 pre-configuration: This section gets a flag
+## S3 pre-configuration
 
 
-It was originally written to the DLT specifications. It needs an update to CloudCheckr. 
+In 2019 working with DLT we received new instructions on setting up an S3 bucket. The support ticket
+at DLT uses OpsCenter at DLT dot com so start by writing them an email asking for help setting up a 
+billing bucket on S3. The bucket name we use is `copydbr-<ID>` where the <ID> is a string unique to 
+your AWS account. Once this bucket is established the billing itemization file should appear. These are 
+closed out each month; so each file corresponds to one month of AWS charges. The filenames use the 12-digit
+AWS account number, here `<accountnumber>`. A typical file will be named 
+  
+`<accountnumber>-aws-billing-detailed-line-items-with-resources-and-tags-<year>-<month>.csv.zip`
+
+These are the files that will be parsed by the costnotify lambda function.
 
 
 ## Create a Role for the Lambda function in advance
