@@ -4,119 +4,56 @@ We build an AWS lambda function *costnotify* that produces a cost breakdown for 
 to an email distribution where the email subject is the spend over the past 24 hours. The email body includes further detail.
 
 
-The file we maintain here is called `costnotify.py`. 
+The file we maintain here is called `costnotify.py`. This could either be uploaded as a `tar` file or copy-pasted into
+the AWS lambda code window. An earlier draft also retained here is the file `analysis.py`.  
 
 
-As a resource: The original_code folder contains the source code for an earlier version of costnotify. This code worked from
+Instructions for building out the costnotify lambda function are found in the `instructions` folder. 
+
+
+As a resource: The `original_code` folder contains the source code for an earlier version of costnotify. This code worked from
 a DLT-generated version of the cost itemization CSV file. DLT is an AWS cloud distributor, in intermediate between the AWS 
 cloud and (say) a UW research group. CSV stands for Comma-Separated Value; so a CSV file is a text version of a spreadsheet
-where columns are delimited by commas.
+where columns are delimited by commas[.](https://github.com/robfatland/ops) 
 
 
-The method is to use an AWS Lambda (Python) to parse/digest data from a billing file called
+There are four AWS services attached to the costnotify lambda function:
 
-```
-111111111111-aws-billing-detailed-line-items-with-resources-and-tags-2019-02.csv.zip
-```
-
-The code to open and parse the code is something like this: 
-
-```
-import json
-import os
-import boto3
-import zipfile
-import csv
-import datetime
-import urllib
-
-accountnumber = os.environ['accountnumber']
-dayintervalStart = os.environ['dayintervalStart']
-dayintervalEnd = os.environ['dayintervalEnd']
-
-yearOfFile = '2019'
-monthOfFile = '02'
-bucketName = 'copydbr-someidentifier'
-
-s3_resource = boto3.resource('s3')
-f = accountnumber +                                                   \
-    '-aws-billing-detailed-line-items-with-resources-and-tags-' +     \
-    yearOfFile + '-' + monthOfFile + '.csv.zip'
-s3_resource.Object(bucketName, f).download_file('/tmp/' + f)        # copy of file local to the lambda environment
-zip_ref = zipfile.ZipFile('/tmp/'+ f, 'r')
-zip_ref.extractall('/tmp/')
-csv_filename = f.split('.')[0]+'.csv'
-with open('/tmp/' + csv_filename, 'r', newline = '\n') as csvfile:
-    lines = csv.reader(csvfile, delimiter=',', quotechar='"')
-    for idx, line in enumerate(lines):
-        if idx == 0:
-            col_dict = {}
-            for i, n in enumerate(line): col_dict.update({n.strip(): i})
-            # get index for tags (user:Name, user:Project)
-            # idx_tag1, idx_tag2, idx_tag3, idx_tag4 = \
-            #     col_dict['user:Owner'], col_dict['user:Project'], col_dict['user:ProjectName'], col_dict['user:Name']
-            # get index for datetime
-            # idx_dt = col_dict['UsageEndDate']
-            # get index for ProductName
-            # idx_pname = col_dict['ProductName']
-            # 'use quantity' has two types: blended and unblended
-            # idx_dollar_blend = col_dict['BlendedCost']
-            # idx_dollar_unblend = col_dict['UnBlendedCost']
-            # for untagged resources
-            # idx_resource = col_dict['ResourceId']
-        else:
-            # parse a line of the file...
-            x = 0 # and so on 
-```
-
-
-record sends billing notifications to AWS account managers via email
-[.](https://github.com/robfatland/ops) 
-It was originally built to operate on DLT-supplied cost logging. As thathas proven sporadic we are re-writing it to work
-against hourly billing records accumulated by "CloudChekr" in an S3 bucket called copydbr.
+* CloudWatch Events set to trigger the costnotify lambda every day (like an alarm clock)
+* S3 bucket `copydbr-<account_identifier>` where monthly billing itemization CSV files are stored
+  * Accumulation courtesy of CloudCheckr 
+* CloudWatch Logs is a little unclear so this gets a flag for future clarification
+  * It does seem to associate with a Role with three associated Policies...
+* SNS Simple Notification Service to distribute costnotify emails to recipients
 
 ## Warnings 
 
-- Don't put the billing file in this repo; it could contain info we don't want public
-  - Rather suggest create an above-repo directory called ../billingdata
+- Don't put a billing file in this repo; treat that as private information
 - Use roles rather than Access Keys built into the code for the same reason
-  - Rob to translate the procedure from cloudmaven to here
 
-## Motivation
+## Motivation for costnotify
 
-- See yesterday's burn today in an email header
-- Track grantee spend versus grant
+- See yesterday's burn today at a glance 
+- Track grantee spend versus grant budget
 
-## Before you begin 
+## Before you begin
 
-- You will need a working Python environment where you can download the data file and try stuff. 
-  - There are three choices available to you
-    - Install Anaconda (or Miniconda) for example from Lesson 1 [here](https://carpentrieslab.github.io/python-aos-lesson/)
-    - Get a JupyterHub account on Port Cormorack by request sent to Rob
-    - Some other path that is not the above two
-- You will probably want to work from the Python `csv` package as shown in the `analysis.py` program
-  - Again you need:
-    - A Python environment
-    - The `csv` package installed there
-    - The February billing data downloaded from the S3 `copydbr` bucket
+- You can work in the AWS console to iteratively develop this code
+- Once a new version is built: copy-paste it over the existing version in this repo
+- You can also work from a clone of this repo and develop code locally, for example...
+  - Install Miniconda per Lesson 1 [here](https://carpentrieslab.github.io/python-aos-lesson/)
+- Probably use the Python `csv` package as shown in the `analysis.py` program
   
-## Set up the bucket and the IAM User 
+## Billing bucket and other considerations
 
-- copydbr
+Go to the S3 listing for N.Virginia and find a bucket with a name that begins `copydbr-`. Verify that this contains monthly 
+billing itemization files. These are zipped so the file extension should be `.zip`. The precise name of this bucket should
+be stored as a Lambda environment variable that loads into the code on execution. 
 
-## File name
-
-- Cover file naming convention
-  - `111122223333-aws-billing-detailed-line-items-with-resources-and-tags-YYYY-MM.cs`
-- Cover opening and reading from a .zip file on an S3 bucket
-
-## Coding contest
-
-- Objective: 
-  - Open the file e.g. using the `csv` package
-  - Check month spend as `blended cost` against actual invoice
-  - print Users and how much each spent; == total?
-  - Bonus objective: 28-day spend plots by User
-    - `numpy.datetime64` and I think `numpy.timedelta64` are useful
-  - Bonus use two time parameters to do a time window version of this
-  - Bonus compensate for UTC (PDT is -7 hrs, PST is -8 hrs)
+- Reading the file involves dealing with the `.zip` format
+- `blended cost` seems to be the right source for comparison with invoicing
+- sorting by IAM User and by resource type
+- A 28-day spend by User would be helpful
+- Crossing month boundaries implies multiple CSV files
+- `numpy.datetime64` and `numpy.timedelta64` are useful
+- Be sure to accommodate UTC versus local (e.g. PDT is -7 hrs, PST is -8 hrs)
