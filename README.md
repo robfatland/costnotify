@@ -1,7 +1,10 @@
 # costnotify
 
-This repo revises the cost notification email with yesterday's spend on AWS in the subject.
-Details are in the body of the email. 
+We build an AWS lambda function *costnotify* that produces a cost breakdown for the parent account. This breakdown is sent 
+to an email distribution where the email subject is the spend over the past 24 hours. The email body includes further detail.
+
+
+The original code 
 
 
 The method is to use an AWS Lambda (Python) to parse/digest data from a billing file called
