@@ -4,7 +4,13 @@ We build an AWS lambda function *costnotify* that produces a cost breakdown for 
 to an email distribution where the email subject is the spend over the past 24 hours. The email body includes further detail.
 
 
-The original code 
+The file we maintain here is called `costnotify.py`. 
+
+
+As a resource: The original_code folder contains the source code for an earlier version of costnotify. This code worked from
+a DLT-generated version of the cost itemization CSV file. DLT is an AWS cloud distributor, in intermediate between the AWS 
+cloud and (say) a UW research group. CSV stands for Comma-Separated Value; so a CSV file is a text version of a spreadsheet
+where columns are delimited by commas.
 
 
 The method is to use an AWS Lambda (Python) to parse/digest data from a billing file called
