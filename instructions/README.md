@@ -98,6 +98,8 @@ you may want to periodically click the Save button at the top of the page.
       - For more on this rather arcane format do a search on 'cron format'
     - Make sure **Enable trigger** is checked
     - Click the **Add** button at lower right to complete this trigger configuration step
+    - ***Important step! In the Designer box click on the Lambda `costnotify` box***
+      - ***This will dismiss the **Cloudwatch events** detail and return you to the Lambda configuration boxes***
   - Find the box **Function Code**
     - Delete the code provided here as a placeholder
     - Copy the `costnotify.py` code from this repo
