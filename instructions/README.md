@@ -64,6 +64,30 @@ un-zipped to be readable.
 - Create the role
 
 
+## Create an SNS Topic 
+
+This Topic will be referenced by the Python code installed in the Lambda function. This is done by
+means of an "ARN string" that refers to the topic.
+
+- Under Services select **Simple Notification Service**
+- Ensure that your region (upper right) is set to **N.Virginia**
+- Select **Topics** in the left sidebar and click the **Create topic** button
+- Set both the **Name** and **Display name** to `costnotify`
+- Ignoring all other settings add a tag with Key = 'Owner' and Value = your username
+  - This helps make the SNS topic traceable to you
+- Click the **Create topic** button at lower right
+  - This creates the topic -- so far so good -- but next we add a Subscription to it so that email can be sent
+- Click **Create subscription**
+- Under **Protocol** select **Email**
+- In the **Endpoint** box enter your email address
+- Click the **Create subscription** box at lower right
+- Return to the `costnotify` topic by clicking **Topics** in the left sidebar
+  - Notice that the topic has an ARN string of the form `arn:aws:sns:us-east-1:<accountnumber>:costnotify
+  - This string is used to reference the topic and thereby deliver email to all listed subscribers
+  - Add additional email recipients by adding additional subscriptions, one per recipient
+  - Each recipient confirms their subscription by responding to an email (so you should receive one)`
+
+
 ## Create the Lambda function
 
 
