@@ -21,12 +21,13 @@ automatically. In our case this action will be triggered by a Lambda function
 ## Procedure overview
 
 - Create the S3 bucket in your account and turn on the accumulation process
-- Create an IAM Role with some permission Policies. The Role will permit your Lambda to "do stuff" on AWS
-- Create a Lambda function that assumes this Role 
-- Configure the Lambda function; add environment variables and code and associated services
-  - ...including a CloudWatch trigger that will cause the Lambda to run once per day
-  - ...including an SNS topic to distribute the Lambda results to an email distribution
-- Test your notifier
+- Create an IAM Role with some permission Policies. 
+  - This Role permits your Lambda to take action on the AWS cloud
+- Create an SNS Topic with a Subscription pointing at your email
+  - This permits the Lambda to send you a cost notification email
+- Create a Lambda function
+- Configure the Lambda function; add environment variables, code, associated services, etcetera
+- Test the Lambda function
 
 
 
@@ -102,10 +103,10 @@ means of an "ARN string" that refers to the topic.
   - Both tabs are important; for now we stay on the Configuration tab
   
 
-## Configuring the `costnotify` Lambda function
+## Configure the `costnotify` Lambda function
 
 The following steps are "everything needed" to get the costnotify Lambda working. As you work through this list
-you may want to periodically click the Save button at the top of the page.
+periodically click the Save button at the top of the page.
 
 
 - Navigate to the Lambda function page and ensure that the **Configuration** tab is selected
@@ -120,6 +121,8 @@ you may want to periodically click the Save button at the top of the page.
       - This will run once per day at 10am UTC which will be early in the morning in the US
       - The idea is for the job to run fairly soon after the day has ended for you
       - For more on this rather arcane format do a search on 'cron format'
+      - See also [this resource](http://docs.aws.amazon.com/lambda/latest/dg/tutorial-scheduled-events-schedule-experessions.html)
+      - Of potential interest: Lambda functions can be triggered as well by a Put Object call to S3
     - Make sure **Enable trigger** is checked
     - Click the **Add** button at lower right to complete this trigger configuration step
     - ***Important step! In the Designer box click on the Lambda `costnotify` box***
@@ -149,54 +152,24 @@ you may want to periodically click the Save button at the top of the page.
     - Give a short description of the Lambda function
     - Set the memory to 256MB
     - Set the timeout interval to 2 minutes
+  - Be sure to click **Save** and then **Test** to verify your `costnotify` Lambda function is working 
 
-## Debugging and using Cost Explorer
+## Debugging, Monitor tab, Cost Explorer
 
-## Stop here with a flag
+When your click the **Test** button at the top of the Lambda function page the results are shown as either Success or Failure.
 
-Everything from this point onward is copied from the old instructions. It needs review and update. 
+Whereas in the preceding we used the **Configure** tab: For debugging we also have the **Monitor** tab
 
-## Continuing with edited version of the old source material
-
-- Scroll past **Designer** panel and **Function code** panel: You will enter four Environment variable key pairs now
-
-
-- Note down the arnString value for use in the SNS setup (below)
-  - In this case it would be 'arn:aws:sns:us-east-1:123456789012:dailycostnotify'
-    - Where again 123456789012 should actually be your 12-digit account number
-  - This will be the SNS topic as described below
-- SAVE your settings so far: Click the Save button at the top of the web page
-
-
-***Setting the Lambda triggers: CloudWatch and Lambda Test button***
-
-- Add a CloudWatch Events trigger. CloudWatch is a management tool that allows you to create an Event linked to your Lambda.
-  - This Event begins with creating a rule in Step 1
-    - Choose **schedule** and use the following string to stipulate 'once per day at noon GMT'...
-      - cron(0 12 * * ? *)
-      - For more on this see [this link](http://docs.aws.amazon.com/lambda/latest/dg/tutorial-scheduled-events-schedule-experessions.html)
-    - Set the target as the Lambda function name: **dailycostnotify** 
-    - Move forward to Configure details in Step 2
-    - Give this rule a Name 'dailycostnotify'. Add a Description and click the button 'Create rule'
-    - The new rule should appear with a timer icon
-      - It will trigger your lambda function every 24 hours
-      - Missing piece: Setting the actual time of day for this trigger...
-  - Note: A lambda function can be set to trigger from S3 access (Get or Put Object)
-    - We do not do that here because the DLT logging process has latency built in
-  - As a separate task: Configure the Lambda function to execute from the Test button 
-    - Go through the default configuration process; you don't have to modify anything
-    - Save and click the Test button. It will fail until everything below is also in place 
-
-
-
-
-
-
+- This tab is very useful is something is not working properly with your lambda function
+- The monitoring tab is selected near the top of your lambda service page in the AWS console
+- Dashboard charts indicate the lambda has been triggered
+- The link to View logs in Cloudwatch is also helpful; diagnostics printed by the lambda show up here
+  - Set print statements in the lambda; save the lambda; trigger it using the Test button; diagnose 
+  
 Cost Explorer is a feature of the AWS browser console. You can access this using the top right dropdown menu 
-and selecting My Billing Dashboard; then start the Cost Explorer.  In more detail:
+and selecting My Billing Dashboard; then start the Cost Explorer.  
 
-
-- When you receive a billing statement you should compare it with the Cost Explorer estimate of yor daily spend
+When you receive a billing statement you should compare it with the Cost Explorer estimate of your daily spend
   - At the upper right of the console use your Account Name dropdown to select My Billing Dashboard
   - Link to the Cost Explorer and launch it
   - Use the Reports dropdown to select **Daily Costs**
@@ -205,13 +178,3 @@ and selecting My Billing Dashboard; then start the Cost Explorer.  In more detai
     - You can hover over a particular day to get the exact value
     - One DLT accounts the current day cost will look low and tend to be inaccurate
   - This daily cost record should be -- we intend -- commensurate with the email notification you will now receive from lambda
-
-
-#### The Lambda function monitoring tab
-
-
-- This tab is very useful is something is not working properly with your lambda function
-- The monitoring tab is selected near the top of your lambda service page in the AWS console
-- Dashboard charts indicate the lambda has been triggered
-- The link to View logs in Cloudwatch is also helpful; diagnostics printed by the lambda show up here
-  - Set print statements in the lambda; save the lambda; trigger it using the Test button; diagnose 
