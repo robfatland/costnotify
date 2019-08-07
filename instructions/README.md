@@ -77,6 +77,40 @@ un-zipped to be readable.
   - Notice two tabs available: Configuration and Monitoring
   - Both tabs are important; for now we stay on the Configuration tab
   
+
+## Configuring the `costnotify` Lambda function
+
+The following steps are "everything needed" to get the costnotify Lambda working. As you work through this list
+you may want to periodically click the Save button at the top of the page.
+
+
+- Navigate to the Lambda function page and ensure that the **Configuration** tab is selected
+  - Click on the **Test** button and give the test a name like `costnotify` with other defaults unmodified
+  - Find the box **Function Code**
+    - Delete the code provided here as a placeholder
+    - Copy the `costnotify.py` code from this repo
+    - Paste it into the Function Code box
+  - Find the box **Environment Variables**
+    - Enter Key `accountnumber` and Value = your corresponding 12-digit numerical AWS account number 
+    - Enter Key `bucketname` and Value = `copydbr-<ID>`
+    - Enter Key 'dayintervalStart' and Value '2'
+    - Enter Key 'dayintervalEnd' and Value '2'
+      - The email sender and subject are not derived from environment variables in this instructional...
+        - ...although of course the subject could be if so desired
+  - Find the box **Tags**
+    - Enter a key = `Owner` and a corresponding value = your IAM User name
+      - This associates the Lambda with you
+  - Find the box **Execution Role**
+    - If you configured this to use the `costnotify` role this should appear here
+    - If you did not specify this...
+      - Create the `costnotify` role (if you have not done so) as described above
+      - Select `Use existing role` and select the `costnotify` role
+  - Find the box **Basic Settings** 
+    - Give a short description of the Lambda function
+    - Set the memory to 256MB
+    - Set the timeout interval to 2 minutes
+
+
 ## Stop here with a flag
 
 Everything from this point onward is copied from the old instructions. It needs review and update. 
@@ -84,31 +118,7 @@ Everything from this point onward is copied from the old instructions. It needs 
 ## Continuing with edited version of the old source material
 
 - Scroll past **Designer** panel and **Function code** panel: You will enter four Environment variable key pairs now
-  - Enter a Key string: accountnumber
-    - Enter the correct Value string for your account: Your 12-digit AWS account number
-    - This will be referenced in the Lambda Python code so that you do not need to hardcode your account number
-  - Enter a Key string 'dayintervalStart'
-    - Enter a Value string '2'
-  - Enter a Key string 'dayintervalEnd'
-    - Enter a Value string '2'
-    - Start and End = 2 is the most recent day range (24 hours) that tends to work properly *most* of the time
-      - You can try other values (remember these are days in the past, relative to today) to see how that works
-      - If you run this on the second day of the month with values like 32 and 2 you should see something close to your monthly spend as the total
-  - Enter a Key string 'emailsubject'
-    - Enter a simple recognizable string as the Value, for example 'AWS daily spend'
-- Scroll down further to the Basic settings panel
-  - Set the Memory (MB) slider to 256 MB
-  - Set the Timeout values to reflect 2 min 10 sec 
-- The remaining lower panels can be left as-is
-  - Notice that the Execution role panel should list the role you created in step 1
-- Scroll back up to the **Function code** panel
-  - Delete the lines of code if there is some stuff already in the code window 
-  - Paste in the code block given here: 
 
-
-```
-This is where the old code used to be. See the folder original_code for this code.
-```
 
 - Note down the arnString value for use in the SNS setup (below)
   - In this case it would be 'arn:aws:sns:us-east-1:123456789012:dailycostnotify'
@@ -119,8 +129,6 @@ This is where the old code used to be. See the folder original_code for this cod
 
 ***Setting the Lambda triggers: CloudWatch and Lambda Test button***
 
-- At the top of the lambda function page are tabs for Configuration and Monitoring as noted
-- Staying on the Configuration tab locate the Designer region at the top of the page which includes a block diagram of the lambda function
 - Add a CloudWatch Events trigger. CloudWatch is a management tool that allows you to create an Event linked to your Lambda.
   - This Event begins with creating a rule in Step 1
     - Choose **schedule** and use the following string to stipulate 'once per day at noon GMT'...
