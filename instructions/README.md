@@ -106,9 +106,9 @@ you may want to periodically click the Save button at the top of the page.
     - Enter Key `accountnumber` and Value = your corresponding 12-digit numerical AWS account number 
     - Enter Key `bucketname` and Value = `copydbr-<ID>`
     - Enter Key 'dayintervalStart' and Value '2'
-    - Enter Key 'dayintervalEnd' and Value '2'
-      - The email sender and subject are not derived from environment variables in this instructional...
-        - ...although of course the subject could be if so desired
+    - Enter Key 'dayintervalEnd' and Value '1'
+      - This defines the 24-hour time range for accumulating total spend
+      - flag what is the time zone for time codes in the file?
   - Find the box **Tags**
     - Enter a key = `Owner` and a corresponding value = your IAM User name
       - This associates the Lambda with you
@@ -122,6 +122,7 @@ you may want to periodically click the Save button at the top of the page.
     - Set the memory to 256MB
     - Set the timeout interval to 2 minutes
 
+## Debugging and using Cost Explorer
 
 ## Stop here with a flag
 
@@ -176,13 +177,7 @@ You should now start receiving a daily spend summary in your Inbox.
 Verify that this works using the Test button on the lambda function page.
 
 
-## Validation and Debugging
 
-
-You should be able to Test your lambda function now. If it fails you'll have to debug it. 
-
-
-## Cost Explorer
 
 
 Cost Explorer is a feature of the AWS browser console. You can access this using the top right dropdown menu 
