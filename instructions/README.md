@@ -131,6 +131,8 @@ you may want to periodically click the Save button at the top of the page.
   - Find the box **Environment Variables**
     - Enter Key `accountnumber` and Value = your corresponding 12-digit numerical AWS account number 
     - Enter Key `bucketname` and Value = `copydbr-<ID>`
+    - Enter Key 'snstopic' and Value 'costnotify'
+      - This Value should match the topic name you created in the previous SNS configuration step
     - Enter Key 'dayintervalStart' and Value '2'
     - Enter Key 'dayintervalEnd' and Value '1'
       - This defines the 24-hour time range for accumulating total spend
@@ -185,22 +187,6 @@ Everything from this point onward is copied from the old instructions. It needs 
     - Go through the default configuration process; you don't have to modify anything
     - Save and click the Test button. It will fail until everything below is also in place 
 
-
-## SNS
-
-
-- In the AWS console go to the SNS services page
-- Select Create topic
-- Enter the topic name per the Python code above: dailycostnotify
-- Enter a topic abbreviation, 10 characters
-  - Example: dailycost
-- Continue to topic details and click Create subscription
-  - Choose type = email and add your email address plus any others you think should receive notifications
-- Click on Create subscription to send a confirmation email to yourself; and then confirm that 
-
-
-You should now start receiving a daily spend summary in your Inbox. 
-Verify that this works using the Test button on the lambda function page.
 
 
 
