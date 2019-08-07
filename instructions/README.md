@@ -86,6 +86,18 @@ you may want to periodically click the Save button at the top of the page.
 
 - Navigate to the Lambda function page and ensure that the **Configuration** tab is selected
   - Click on the **Test** button and give the test a name like `costnotify` with other defaults unmodified
+  - Find the box **Designer** and click on **+ Add Trigger**
+    - This creates a CloudWatch alarmclock that will run this Lambda function once per day
+    - Select **CloudWatch Events** as the trigger
+    - For **Rule** select **Create a new Rule**
+    - Give a rule name (say `costnotify`) and short description
+    - For **Rule type** select **Schedule expression**
+    - Enter this rule in the **Schedule expression* box: `cron(0 10 * * ? *)`
+      - This will run once per day at 10am UTC which will be early in the morning in the US
+      - The idea is for the job to run fairly soon after the day has ended for you
+      - For more on this rather arcane format do a search on 'cron format'
+    - Make sure **Enable trigger** is checked
+    - Click the **Add** button at lower right to complete this trigger configuration step
   - Find the box **Function Code**
     - Delete the code provided here as a placeholder
     - Copy the `costnotify.py` code from this repo
