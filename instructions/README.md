@@ -20,7 +20,7 @@ automatically. In our case this action will be triggered by a Lambda function
 
 ## Procedure overview
 
-- Create the S3 bucket in your account and turn on the accumulation process
+- If not already done: Create the S3 bucket in your account and turn on expense logging to that bucket
 - Create an IAM Role with some permission Policies. 
   - This Role permits your Lambda to take action on the AWS cloud
 - Create an SNS Topic with a Subscription pointing at your email
@@ -34,18 +34,51 @@ automatically. In our case this action will be triggered by a Lambda function
 ## S3 pre-configuration
 
 
-In 2019 working with DLT we received new instructions on setting up an S3 bucket. The support ticket
-at DLT uses OpsCenter at DLT dot com so start by writing them an email asking for help setting up a 
-billing bucket on S3. The bucket name we use is `copydbr-<ID>` where `<ID>` is a string unique to 
-your AWS account. Once this bucket is established the billing itemization file should appear therein. 
-These files are periodically updated (time scale hours) and then closed out at the end of each month. 
-That is: Each billing file corresponds to one month of AWS charges. The filenames for these files 
-use the 12-digit AWS account number, here `<accountnumber>`. A typical file will be named 
-  
+In the AWS console select **Services** and sub-select **S3** under the **Storage** heading. This should
+produce an alphabetized listing of **S3 buckets**. The listing is **Global** (see upper right corner of
+the console) so there is no region to specify. Look for a bucket `copydbr-<identifier>`. If one is
+present: Select that bucket and look for filenames in this format: 
+
+
 `<accountnumber>-aws-billing-detailed-line-items-with-resources-and-tags-<year>-<month>.csv.zip`
 
-These are the files that will be parsed by the costnotify lambda function. Note that they must be 
-un-zipped to be readable. 
+
+If these files are present you are done with this step. If these files and/or this bucket are not
+present: Send an email to OpsCenter at DLT dot com identifying yourself as an administrator and
+ask 'How do I enable cloudcheckr cost logging to an S3 bucket?' In February 2019 the procedure 
+was as outlined below. However this procedure may change so it is best to begin with this email inquiry.
+
+
+
+* create a unique bucket in each account, for example `copydbr-unicornproject`
+* create an IAM account with the appropriate access permission
+  * You attach the following policy to the IAM account
+
+```
+{
+ "Version": "2012-10-17",
+ "Statement": [{
+      "Sid": "Stmt1443712554000",
+      "Effect": "Allow",
+      "Action": [
+      "s3:DeleteObject",
+      "s3:GetBucketLocation",
+      "s3:ListObject",
+      "s3:PutObject"
+      ],
+      "Resource": ["arn:aws:s3:::your-target-S3-bucket-name-here*"]
+  }
+ ]
+}
+```
+
+* Send the IAM User keys to DLT support
+* DLT will reply when logging is enabled
+
+
+Billing files are periodically updated (time scale hours) and closed at the end of each month. 
+That is: Each billing file corresponds to one month of AWS charges. These are the files that 
+are parsed by the `costnotify` lambda function. 
 
 
 ## Create a Role for the Lambda function in advance
