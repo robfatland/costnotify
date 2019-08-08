@@ -33,11 +33,16 @@ automatically. In our case this action will be triggered by a Lambda function
 
 ## S3 pre-configuration
 
+Your AWS account may or may not have CostCheckr service/cost logging enabled. Here we first look around to
+see if or verify that this is so. If it is not we proceed to enable it. 
 
 In the AWS console select **Services** and sub-select **S3** under the **Storage** heading. This should
 produce an alphabetized listing of **S3 buckets**. The listing is **Global** (see upper right corner of
-the console) so there is no region to specify. Look for a bucket `copydbr-<identifier>`. If one is
-present: Select that bucket and look for filenames in this format: 
+the console) so there is no region to specify. Look for a bucket that would be designated for CloudCheckr
+service/cost logging. In our case these buckets were named `copydbr-<ID>` where <ID> is some string that
+identifies this AWS account. 
+  
+If such a bucket is found: Click on it. An enabled bucket will contain filenames like this: 
 
 
 `<accountnumber>-aws-billing-detailed-line-items-with-resources-and-tags-<year>-<month>.csv.zip`
@@ -46,13 +51,14 @@ present: Select that bucket and look for filenames in this format:
 If these files are present you are done with this step. If these files and/or this bucket are not
 present: Send an email to OpsCenter at DLT dot com identifying yourself as an administrator and
 ask 'How do I enable cloudcheckr cost logging to an S3 bucket?' In February 2019 the procedure 
-was as outlined below. However this procedure may change so it is best to begin with this email inquiry.
+was as outlined below. However this procedure may change so it is best to begin with the email enquiry.
 
 
 
-* create a unique bucket in each account, for example `copydbr-unicornproject`
+* create a unique bucket in each account, for example `copydbr-unicorn`
 * create an IAM account with the appropriate access permission
   * You attach the following policy to the IAM account
+  * Generate and download IAM User access keys
 
 ```
 {
@@ -76,9 +82,10 @@ was as outlined below. However this procedure may change so it is best to begin 
 * DLT will reply when logging is enabled
 
 
-Billing files are periodically updated (time scale hours) and closed at the end of each month. 
+Billing files are periodically updated (daily) and closed at the end of each month. 
 That is: Each billing file corresponds to one month of AWS charges. These are the files that 
-are parsed by the `costnotify` lambda function. 
+are parsed by the `costnotify` lambda function. Once these files are appearing in
+bucket `copydbr-<ID>` you can continue.
 
 
 ## Create a Role for the Lambda function in advance
