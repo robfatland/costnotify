@@ -34,7 +34,7 @@ automatically. In our case this action will be triggered by a Lambda function
 ## S3 pre-configuration
 
 Your AWS account may or may not have CostCheckr service/cost logging enabled. Here we first look around to
-see if or verify that this is so. If it is not we proceed to enable it. 
+see if you are set. If not we proceed to enable service/cost logging. 
 
 In the AWS console select **Services** and sub-select **S3** under the **Storage** heading. This should
 produce an alphabetized listing of **S3 buckets**. The listing is **Global** (see upper right corner of
