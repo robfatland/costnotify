@@ -39,7 +39,7 @@ see if or verify that this is so. If it is not we proceed to enable it.
 In the AWS console select **Services** and sub-select **S3** under the **Storage** heading. This should
 produce an alphabetized listing of **S3 buckets**. The listing is **Global** (see upper right corner of
 the console) so there is no region to specify. Look for a bucket that would be designated for CloudCheckr
-service/cost logging. In our case these buckets were named `copydbr-<ID>` where <ID> is some string that
+service/cost logging. In our case these buckets were named `copydbr-<ID>` where `<ID>` is some string that
 identifies this AWS account. 
   
 If such a bucket is found: Click on it. An enabled bucket will contain filenames like this: 
@@ -49,7 +49,7 @@ If such a bucket is found: Click on it. An enabled bucket will contain filenames
 
 
 If these files are present you are done with this step. If these files and/or this bucket are not
-present: Send an email to OpsCenter at DLT dot com identifying yourself as an administrator and
+present: Send an email to OpsCenter at dlt dot com identifying yourself as an administrator and
 ask 'How do I enable cloudcheckr cost logging to an S3 bucket?' In February 2019 the procedure 
 was as outlined below. However this procedure may change so it is best to begin with the email enquiry.
 
@@ -78,8 +78,8 @@ was as outlined below. However this procedure may change so it is best to begin 
 }
 ```
 
-* Send the IAM User keys to DLT support
-* DLT will reply when logging is enabled
+* Send the IAM User keys to DLT support together with the name of the S3 bucket and the account number
+* DLT should notify you fairly quickly when logging is enabled
 
 
 Billing files are periodically updated (daily) and closed at the end of each month. 
@@ -106,6 +106,7 @@ bucket `copydbr-<ID>` you can continue.
 
 
 ## Create an SNS Topic 
+
 
 This Topic will be referenced by the Python code installed in the Lambda function. This is done by
 means of an "ARN string" that refers to the topic.
@@ -144,6 +145,7 @@ means of an "ARN string" that refers to the topic.
   
 
 ## Configure the `costnotify` Lambda function
+
 
 The following steps are "everything needed" to get the costnotify Lambda working. As you work through this list
 periodically click the Save button at the top of the page.
@@ -198,13 +200,15 @@ periodically click the Save button at the top of the page.
 
 When your click the **Test** button at the top of the Lambda function page the results are shown as either Success or Failure.
 
-Whereas in the preceding we used the **Configure** tab: For debugging we also have the **Monitor** tab
 
-- This tab is very useful is something is not working properly with your lambda function
-- The monitoring tab is selected near the top of your lambda service page in the AWS console
-- Dashboard charts indicate the lambda has been triggered
-- The link to View logs in Cloudwatch is also helpful; diagnostics printed by the lambda show up here
-  - Set print statements in the lambda; save the lambda; trigger it using the Test button; diagnose 
+If execution Fails: Read through the message in the Output section of the **Code** box. This will indicate
+the line of code where the problem occurred.
+
+Whether the Lambda execution succeeded or failed you may be interested in the output it produces.
+Follow the **logs** hyperlink to see a list of result log files. The most recent is at the top. Click on
+this file to open it. Any `print` output from the Lambda function can be found here. 
+
+The **Monitor** tab may also be useful in debugging. Dashboard charts indicate the lambda has been triggered, etcetera.
   
 Cost Explorer is a feature of the AWS browser console. You can access this using the top right dropdown menu 
 and selecting My Billing Dashboard; then start the Cost Explorer.  
