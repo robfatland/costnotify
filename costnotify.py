@@ -45,7 +45,7 @@ Here is the indexing for the 25 columns of the CSV billing file:
 ### choose which file(s) to parse
 def FileChoice(contents_list):
     
-    # "now" is datetime.datetime.now()
+   
     
     # establish two lists: filenames and the time that each was last updated (seconds since 1970!)
     filelist, updateTime = [], []
@@ -86,12 +86,20 @@ def lambda_handler(event, context):
         
         # flag this will need attention on month/year boundaries
         fileChosen = FileChoice(csv_file_list['Contents'])
-        
-        yearOfFile = '2019'
-        monthOfFile = '08'
+
+        myToday     = datetime.datetime.now()        
+        myYesterday = myToday - datetime.timedelta(days=1)
+        # print('yester-year month day are:', myYesterday.year, myYesterday.month, myYesterday.day)
+        # yesterDayString = '{:02d}'.format(myYesterday.day)
+        yesterMonthString = '{:02d}'.format(myYesterday.month)
+        yesterYearString = '{:04d}'.format(myYesterday.year)
+        # print('or as a string: '+ yesterDayString + '-' + yesterMonthString + '-' + yesterYearString)
+        timerangeStart = datetime.datetime(myYesterday.year, myYesterday.month, myYesterday.day, 0, 0, 0);
+        timerangeEnd   = datetime.datetime(myToday.year, myToday.month, myToday.day, 0, 0, 0);
+    
         fileDesignated = accountnumber +                                      \
             '-aws-billing-detailed-line-items-with-resources-and-tags-' +     \
-            yearOfFile + '-' + monthOfFile + '.csv.zip'
+            yesterYearString + '-' + yesterMonthString + '.csv.zip'
             
         # copy the billing file and unzip it so it can be read
         s3_resource.Object(bucketname, fileDesignated).download_file('/tmp/' + fileDesignated)   # copy from S3 to local
@@ -104,6 +112,8 @@ def lambda_handler(event, context):
         blended_cost = []
         bill_timestamps = []
         bill_sum = 0.
+        nInRange = 0
+        nTotal = 0
         
         with open('/tmp/' + csv_filename, 'r', newline = '\n') as csvfile:
             lines = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -131,20 +141,28 @@ def lambda_handler(event, context):
                     # idx_resource = column_dictionary['ResourceId']
                     
                 else:
+                    nTotal += 1
                     # Here we should be using "yesterday" logic: Only add up items billed to yesterday
                     bill_sum += float(line[18])
                     if idx < 6:
                         blended_cost.append(float(line[18]))
                         bill_timestamps.append(line[15])
+                    billEndTime = datetime.datetime.strptime(line[15], '%Y-%m-%d %H:%M:%S')
+                    if billEndTime > timerangeStart and billEndTime <= timerangeEnd:
+                        nInRange += 1
+                        
+        print("Entries, in range =", nTotal, nInRange)
+        
+        bill_sum_string = '%.2f' % bill_sum
         
         # Use ComposeMessage() to assemble the body of the email message
-        email_subject = '$' + str(bill_sum) + ' AWS Czar'
+        email_subject = '$' + bill_sum_string + ' AWS Czar'
         email_body    = '...parsing ' + fileDesignated + '\n'
         email_body   += 'bill total is ' + str(bill_sum) + '\n'
         email_body   += str(bill_timestamps) + '\n\n\n'
         
         # This is a faster way to debug (you don't wait for email_body to arrive via email)
-        print(email_body)
+        print(email_subject + '\n\n' + email_body)
         
         # "publish to SNS Topic" translates to "send email to the SNS distribution list"    
         sns           = boto3.client('sns')
