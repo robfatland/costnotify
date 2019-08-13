@@ -1,3 +1,6 @@
+***Status: This is a re-build of an earlier solution. The software is in development (13-AUG-2019) and not yet stable, not yet useful.***
+
+
 # costnotify
 
 We build an AWS lambda function *costnotify* that produces a cost breakdown for the parent account. This breakdown is sent 
