@@ -1,24 +1,22 @@
-***Status: This is a re-build of an earlier solution. The software is in development (13-AUG-2019) and not yet stable, not yet useful.***
+***Status: This is a re-build of an earlier solution. The software is in development (13-AUG-2019) and not yet stable, about 80% of the way to being useful.***
 
 
 # costnotify
 
-We build an AWS lambda function *costnotify* that produces a cost breakdown for the parent account. This breakdown is sent 
-to an email distribution where the email subject is the spend over the past 24 hours. The email body includes further detail.
+This repo is instructions and code for building an AWS lambda function *costnotify* to send a spending breakdown 
+email to selected recipients for an AWS cloud account. Typically the email subject is "how much did I spend in
+the past 24 hours" and the email body is further details breaking down cost. 
 
 
-The source code we maintain here is in the `costnotify.py` file. AWS does not upload this automatically; 
-rather it must be installed via some means. The two methods that are the most immediate work via your 
-browser connecting to the AWS 'console', an account management website. Method 1 is to upload a `tar` file 
-that contains your code. We don't cover that here. Method two is to simply copy-paste the code into
-the AWS Lambda code window. That's what we cover here. 
+The lambda code is the file `costnotify.py` in this folder. Our instructions include a copy-paste of this 
+code into the code window of the lambda function on the AWS console. There is another method for doing this
+using a tar file that we do not cover here.
 
 
-Some earlier work on putting this together may still reside in this repo with filenames like `prototype.py` 
-and/or `analysis.py` and these (flag) should eventually be tidied up once things are working.
+Other files in this repo such as `prototype.py` and `analysis.py` are older version source material. 
+We'll try and keep `costnotify.py` as our best working version.
 
 **Instructions for building out the costnotify lambda function are found in the `instructions` folder.**
-As a resource: The `original_code` folder contains the source code for an earlier version of costnotify.
 
 Additional considerations...
 
@@ -26,36 +24,29 @@ Additional considerations...
   - A safety check at-a-glance: Everything is ok
 - Further motivation: Track grantee spend versus (say) a grant budget
 - Good practice: Don't put a billing file in this repo
-- Good practice: Use AWS Roles rather than Access Keys
-- Development: You can work in the AWS console to iteratively develop this code
-- Updating this repo: Copy-paste from the AWS console code box to here
-- You can also work from a clone of this repo and develop code locally, for example...
-  - Install Miniconda per software carpentry lesson 1 [here](https://carpentrieslab.github.io/python-aos-lesson/)
-- Good practice: Use the Python `csv` package as shown in the `analysis.py` program
-  - You could also use :) pandas :)
+- Good practice: Use AWS Roles, ***not*** Access Keys
+- Good practice: Use the Python `csv` package... simpler than using pandas :)
 
 
 There are four AWS services attached to the costnotify Lambda function:
 
 
-* CloudWatch Events set to trigger the costnotify lambda every day (like an alarm clock)
-* S3 bucket `copydbr-<account_identifier>` where monthly billing itemization CSV files are stored
-  * Accumulation courtesy of CloudCheckr 
-* CloudWatch Logs enables debugging; it records the output when the Lambda executes
-* SNS (Simple Notification Service) distributes the **costnotify** email to recipients
+* CloudWatch Events trigger the costnotify lambda (cron)
+* S3 bucket: We use name `copydbr-<account_identifier>` billing itemization CSV files from CloudCheckr 
+* CloudWatch Logs enables debugging; output of Lambda execution
+* SNS (Simple Notification Service) to distribute the **costnotify** message to subscribers
 
 
-## Specific to this version of costnotify...
+## Prep
 
 
-Go to the S3 listing for N.Virginia and find a bucket with a name that begins `copydbr-`. If it is not there you
-will need to set it up by contacting DLT at OpsCenter at dlt dot com. Once the bucket is in place you should 
-verify it contains monthly billing itemization files. 
+Within a candidate account: Check the S3 listing for N.Virginia to identify the logging bucket. 
+In our case this bucket has a name that begins with `copydbr-`. The bucket should contain monthly 
+billing itemization files. 
 
-- Reading a billing file involves dealing with the `.zip` format
+- Billing files are in `.zip` format
 - `blended cost` seems to be the right source for comparison with invoicing
-- sort by IAM User and by resource type
+- tagging suggest auto-tagging by IAM User
 - A 28-day spend by User would be helpful
-- Crossing month and/or year boundaries implies multiple CSV files
-- `numpy.datetime64` and `numpy.timedelta64` are useful
+- Crossing month and/or year boundaries implies mining multiple CSV files
 - Be sure to accommodate UTC versus local (e.g. PDT is -7 hrs, PST is -8 hrs)
