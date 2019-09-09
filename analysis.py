@@ -35,12 +35,7 @@ cols_inv = {v: k for k, v in cols.items()}
 with open('../billingdata/febdata.csv') as f:
     reader = csv.reader(f, delimiter=',')
     data=list(reader)
-    n = len(data)           # returns 112494
-    # print(data[7000])
-    # for r in readCSV:
-    # print(r[9], 'op', r[10], 'item', r[13], r[14], r[16], r[18])
-    #     nrows += 1
-    #     if nrows > 1000: break
+    n = len(data)           # returns 112494 for Feb 2019
     s = sum(float(line[18]) for line in data[1:-1])
     print(s)
         
