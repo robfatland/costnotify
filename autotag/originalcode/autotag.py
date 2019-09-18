@@ -149,7 +149,7 @@ def lambda_handler(event, context):
             for index, tag in enumerate(response['TagSet']):
                 if tag['Key'] != 'Project' or tag['Key'] != 'End_date' or tag['Key'] != 'Name':
                     print ('SNS ready')
-                    sns = boto3.client('sns', aws_access_key_id='AKIAJ44UJ2M35FLFUJPQ', aws_secret_access_key='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')
+                    sns = boto3.client('sns', aws_access_key_id='X', aws_secret_access_key='X')
                     response = sns.publish(
                         TopicArn='arn:aws:sns:us-east-1:509248752274:Autotag',
                         Message= user + '(' + principal + ') did not include Name, Project and End_date tags in ' + ide + '. Please add these tags asap. Thanks!',
