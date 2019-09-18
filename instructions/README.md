@@ -181,9 +181,9 @@ periodically click the Save button at the top of the page.
     
 `accountnumber`: your corresponding 12-digit numerical AWS account number<BR>
 `bucketname`: The name of your *copydbr-etcetera* S3 bucket (see above on setting this up)<BR>
-`snstopic': 'costnotify' (i.e. match the topic name you created in the previous SNS configuration step) <BR>
+`snstopic`: 'costnotify' (i.e. match the topic name you created in the previous SNS configuration step) <BR>
 `friendlyaccountname`: Short word/phrase identifying which account this is for a human reader<BR>
-`override`: `False` (set *True* to get the analysis for a particular year/month<BR>
+`override`: `False` (set `True` to get the analysis for a particular year/month<BR>
 `monthOverride`: The numerical month 1, 2, ..., 12 you are interested in<BR>
 `yearOverride`: The numerical year 2019, ... you are interested in<BR>
 
