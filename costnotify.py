@@ -161,8 +161,8 @@ def lambda_handler(event, context):
         #   if first case: Then there is no 'yesterday' this month so the total is zero
         #   if second case: Then the day before today is dayOfMonth - 1 which in turn has an index
         #     (dayOfMonth - 1) - 1. That is why we have the '- 2'.
-        if dayOfMonth == 1: mostRecentDayBill = 0.           
-        else:               mostRecentDayBill = costByDay[dayOfMonth - 2]
+        if dayOfMonth < 3: mostRecentDayBill = 0.           
+        else:              mostRecentDayBill = costByDay[dayOfMonth - 3]
 
         mostRecentDayBillString = '%.2f' % mostRecentDayBill
         monthBillString = '%.2f' % monthBill
