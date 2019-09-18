@@ -9,12 +9,18 @@ import urllib
 accountnumber = os.environ['accountnumber']
 bucketname = os.environ['bucketname']
 snstopic = os.environ['snstopic']
+friendlyaccountname = os.environ['friendlyaccountname']
 dayintervalStart = os.environ['dayintervalStart']
 dayintervalEnd = os.environ['dayintervalEnd']
 
+# for month-specific analysis
+override = os.environ['override']
+monthOverride = os.environ['monthOverride']
+yearOverride = os.environ['yearOverride']
+
+
 '''
 Here is the indexing for the 25 columns of the CSV billing file:
-
 'InvoiceID': 0
 'PayerAccountId': 1
 'LinkedAccountId': 2
@@ -42,24 +48,6 @@ Here is the indexing for the 25 columns of the CSV billing file:
 'user:Project': 24
 '''
 
-### choose which file(s) to parse
-def FileChoice(contents_list):
-    
-   
-    
-    # establish two lists: filenames and the time that each was last updated (seconds since 1970!)
-    filelist, updateTime = [], []
-    for element in contents_list:
-        filename = element['Key'].split('.')    # a printable 3-element list: <long-filename>, '.csv', '.zip'
-        filetime = element['LastModified']
-        if filename[-1] == 'zip':
-            filelist.append(element['Key'])
-            updateTime.append(element['LastModified'].timestamp())     # Verified: len(filelist) is equal to len(updateTime)
-
-    # this could be expanded to a list of files if we are at a month or year boundary right now
-    return filelist[-1]
-
-
 
 
 # this function is the "main program", called whenever the Lambda runs.
@@ -77,89 +65,112 @@ def lambda_handler(event, context):
 
     # a bucket object we will use to access the billing log files
     s3 = boto3.client('s3')
+    BlendedCostIndex = 18
+    UsageEndDateIndex = 15
+    costByDay     = []                           # Day 0 = 1st dat of the month, etcetera
+    datetimeByDay = []                           # datetimes at midnight (Zulu?) for days of the month
+    costByService = []                           # Not implemented and should probably be a dictionary, not a list
+
+    leapyears = [2000, 2004, 2008, 2012, 2016, 2020, 2024, 2028, 2032, 2036, 2040, 2044, 2048]
+    daysPerMonth = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
     try:
+        
         # the S3 bucket 'bucketname' contains the billing files
         csv_file_list = s3.list_objects(Bucket = bucketname) # ...a list of dictionaries, one per monthly log file
         s3_resource = boto3.resource('s3')
         key = csv_file_list['Contents'][1]['Key']    # this is a string
         
-        # flag this will need attention on month/year boundaries
-        fileChosen = FileChoice(csv_file_list['Contents'])
+        if override in ['True', 'true', '1', 'yes']:
+            monthOverride_int = int(monthOverride)
+            yearOverride_int = int(yearOverride)  
+            if monthOverride_int < 1 or monthOverride_int > 12: return 'bad month override'
+            if yearOverride_int < 2014 or yearOverride_int > 2030: return 'bad year override'
+            dayOfMonth = daysPerMonth[monthOverride_int]
+            if monthOverride_int == 2 and yearOverride_int in leapyears: dayOfMonth = 29
+            endDay = datetime.datetime(yearOverride_int, monthOverride_int, dayOfMonth, 0, 0, 0)
+            monthString = '{:02d}'.format(endDay.month)
+            yearString = '{:04d}'.format(endDay.year)
 
-        myToday     = datetime.datetime.now()        
-        myYesterday = myToday - datetime.timedelta(days=1)
-        # print('yester-year month day are:', myYesterday.year, myYesterday.month, myYesterday.day)
-        # yesterDayString = '{:02d}'.format(myYesterday.day)
-        yesterMonthString = '{:02d}'.format(myYesterday.month)
-        yesterYearString = '{:04d}'.format(myYesterday.year)
-        # print('or as a string: '+ yesterDayString + '-' + yesterMonthString + '-' + yesterYearString)
-        timerangeStart = datetime.datetime(myYesterday.year, myYesterday.month, myYesterday.day, 0, 0, 0);
-        timerangeEnd   = datetime.datetime(myToday.year, myToday.month, myToday.day, 0, 0, 0);
-    
-        fileDesignated = accountnumber +                                      \
+        else:
+            today      = datetime.datetime.now()
+            endDay      = today - datetime.timedelta(days = 1)
+            dayOfMonth  = endDay.day
+            monthString = '{:02d}'.format(endDay.month)
+            yearString  = '{:04d}'.format(endDay.year)
+
+        # Example 1: override is 'True' and monthOverride is string '4' and yearOverride is string '2019'
+        #   Integer values are 4 and 2019. dayOfMonth will be daysPerMont[4] = 30. endDay will be datetime 30-APR-2019.
+        # Example 2: Today is September 14 2019
+        #   endDay = yesterday's date (a datetime) so dayOfMonth = 13
+        # In both cases the range(0, dayOfMonth) will index 0, 1, 2, ..., dayOfMonth - 1
+        for i in range(dayOfMonth):
+            datetimeByDay.append(endDay - datetime.timedelta(days = dayOfMonth - i))
+            costByDay.append(0.)
+        
+        monthlyBillingFile = accountnumber +                                  \
             '-aws-billing-detailed-line-items-with-resources-and-tags-' +     \
-            yesterYearString + '-' + yesterMonthString + '.csv.zip'
+            yearString + '-' + monthString + '.csv.zip'
             
         # copy the billing file and unzip it so it can be read
-        s3_resource.Object(bucketname, fileDesignated).download_file('/tmp/' + fileDesignated)   # copy from S3 to local
-        zip_ref = zipfile.ZipFile('/tmp/'+ fileDesignated, 'r')
+        s3_resource.Object(bucketname, monthlyBillingFile).download_file('/tmp/' + monthlyBillingFile)   # from S3 to local
+        zip_ref = zipfile.ZipFile('/tmp/'+ monthlyBillingFile, 'r')
         zip_ref.extractall('/tmp/')
-        csv_filename = fileDesignated.split('.')[0]+'.csv'
+        csv_filename = monthlyBillingFile.split('.')[0]+'.csv'
         
         # prepare to get the column headers by creating an empty dictionary
         column_dictionary = {}
-        blended_cost = []
-        bill_timestamps = []
-        bill_sum = 0.
-        nInRange = 0
-        nTotal = 0
+        monthBill = 0.
+        nTotalItems = 0
+        
+        print("compare: daily cost list has length =", len(costByDay), 'versus day of month =', dayOfMonth)
+        
+        if not len(costByDay) == dayOfMonth: 
+            return("logic fail nDaysInferred vs dayOfMonth: " + str(len(costByDay)), dayOfMonth)
         
         with open('/tmp/' + csv_filename, 'r', newline = '\n') as csvfile:
             lines = csv.reader(csvfile, delimiter=',', quotechar='"')
             
             for idx, line in enumerate(lines):
                 
-                # this code pulls out the column names and maps them to integers
-                #   refer to the comment at the top of this file for the results
+                # this if pulls column labels mapped to integers
+                #   cf mapping comment at top of this file
                 if idx == 0:
                     for i, n in enumerate(line): column_dictionary.update({n.strip(): i})
                     
-                    # This is old code from the prior version...
-                    #
-                    # get index for tags (user:Name, user:Project)
-                    # idx_tag1, idx_tag2, idx_tag3, idx_tag4 = \
-                    #     column_dictionary['user:Owner'], column_dictionary['user:Project'], column_dictionary['user:ProjectName'], column_dictionary['user:Name']
-                    # get index for datetime
-                    # idx_dt = column_dictionary['UsageEndDate']
-                    # get index for ProductName
-                    # idx_pname = column_dictionary['ProductName']
-                    # 'use quantity' has two types: blended and unblended
-                    # idx_dollar_blend = column_dictionary['BlendedCost']
-                    # idx_dollar_unblend = column_dictionary['UnBlendedCost']
-                    # for untagged resources
-                    # idx_resource = column_dictionary['ResourceId']
-                    
+                # otherwise accrue this cost to the total monthly bill and daily itemization
                 else:
-                    nTotal += 1
-                    # Here we should be using "yesterday" logic: Only add up items billed to yesterday
-                    bill_sum += float(line[18])
-                    if idx < 6:
-                        blended_cost.append(float(line[18]))
-                        bill_timestamps.append(line[15])
-                    billEndTime = datetime.datetime.strptime(line[15], '%Y-%m-%d %H:%M:%S')
-                    if billEndTime > timerangeStart and billEndTime <= timerangeEnd:
-                        nInRange += 1
+                    nTotalItems += 1
+                    itemCost = float(line[BlendedCostIndex])
+                    monthBill += itemCost
+                    itemEndTime = datetime.datetime.strptime(line[UsageEndDateIndex], '%Y-%m-%d %H:%M:%S')
+                    itemDayIndex = int(itemEndTime.day) - 1
+
+                    if itemDayIndex >= len(costByDay):
+                        print("logic error: item exceeds allowed day range")
+                        print('day index, len(cost list):', itemDayIndex, len(costByDay))
+                        print('item end time:', itemEndTime)
+                        print('final available datetime for month:', datetimeByDay[-1])
                         
-        print("Entries, in range =", nTotal, nInRange)
+                    else: costByDay[itemDayIndex] += itemCost 
+                        
+        print("Cost entries:", nTotalItems)
         
-        bill_sum_string = '%.2f' % bill_sum
+        # either dayOfMonth == 1 or dayOfMonth == 2, 3, 4, ..., 28 or 29 or 30 or 31
+        #   if first case: Then there is no 'yesterday' this month so the total is zero
+        #   if second case: Then the day before today is dayOfMonth - 1 which in turn has an index
+        #     (dayOfMonth - 1) - 1. That is why we have the '- 2'.
+        if dayOfMonth == 1: mostRecentDayBill = 0.           
+        else:               mostRecentDayBill = costByDay[dayOfMonth - 2]
+
+        mostRecentDayBillString = '%.2f' % mostRecentDayBill
+        monthBillString = '%.2f' % monthBill
         
         # Use ComposeMessage() to assemble the body of the email message
-        email_subject = '$' + bill_sum_string + ' AWS Czar'
-        email_body    = '...parsing ' + fileDesignated + '\n'
-        email_body   += 'bill total is ' + str(bill_sum) + '\n'
-        email_body   += str(bill_timestamps) + '\n\n\n'
+        email_subject = '$' + mostRecentDayBillString  + ' AWS ' + friendlyaccountname
+        email_body    = 'This month to date: $' + monthBillString + '\n\nBy day:\n\n'
+        for idx, entry in enumerate(costByDay): email_body += str(idx + 1) + ': ' + str(entry) + '\n'
+        email_body += '\n\n'
         
         # This is a faster way to debug (you don't wait for email_body to arrive via email)
         print(email_subject + '\n\n' + email_body)
@@ -179,3 +190,30 @@ def lambda_handler(event, context):
         print(e)
         print('Error getting object {} from bucket {}'.format(key, bucketname))
         raise e
+        
+        
+#######################
+###
+### Artifact code from the past
+###
+#######################
+
+### choose which file(s) to parse
+# def FileChoice(contents_list):
+    # establish two lists: filenames and the time that each was last updated (seconds since 1970!)
+    # filelist, updateTime = [], []
+    # for element in contents_list:
+        # filename = element['Key'].split('.')    # a printable 3-element list: <long-filename>, '.csv', '.zip'
+        # filetime = element['LastModified']
+        # if filename[-1] == 'zip':
+            # filelist.append(element['Key'])
+            # updateTime.append(element['LastModified'].timestamp())     # Verified: len(filelist) is equal to len(updateTime)
+
+    # this could be expanded to a list of files if we are at a month or year boundary right now
+    # return filelist[-1]
+    
+# flag this will need attention on month/year boundaries
+# fileChosen = FileChoice(csv_file_list['Contents'])
+
+# For reference: some_dt = datetime.datetime(x.year, x.month, x.day, 0, 0, 0);
+# reference components of the datetime using for example some_datetime.year
