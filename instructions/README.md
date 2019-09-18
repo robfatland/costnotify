@@ -1,7 +1,10 @@
 ## Objective and Supporting Information
 
 This is	a walk-through for installing a daily cost notify email for an AWS account. It is 
-revised 6-AUG-2019 to accommodate the CloudCheckr itemization file format. 
+revised 6-AUG-2019 to accommodate the CloudCheckr itemization file format.
+
+Further revision September 2019 to allow **Test** mode to send a report for a chosen year/month
+in addition to the standard daily report which summarizes the current month-to-date.
 
 
 - In what follows we try to consistently use `costnotify` as a resource label
@@ -174,14 +177,16 @@ periodically click the Save button at the top of the page.
     - Copy the `costnotify.py` code from this repo
     - Paste it into the Function Code box
   - Find the box **Environment Variables**
-    - Enter Key `accountnumber` and Value = your corresponding 12-digit numerical AWS account number 
-    - Enter Key `bucketname` and Value = `copydbr-<ID>`
-    - Enter Key 'snstopic' and Value 'costnotify'
-      - This Value should match the topic name you created in the previous SNS configuration step
-    - Enter Key 'dayintervalStart' and Value '2'
-    - Enter Key 'dayintervalEnd' and Value '1'
-      - This defines the 24-hour time range for accumulating total spend
-      - flag what is the time zone for time codes in the file?
+    - Enter the following Key-Value pairs:
+    
+`accountnumber`: your corresponding 12-digit numerical AWS account number<BR>
+`bucketname`: The name of your *copydbr-etcetera* S3 bucket (see above on setting this up)<BR>
+`snstopic': 'costnotify' (i.e. match the topic name you created in the previous SNS configuration step) <BR>
+`friendlyaccountname`: Short word/phrase identifying which account this is for a human reader<BR>
+`override`: `False` (set *True* to get the analysis for a particular year/month<BR>
+`monthOverride`: The numerical month 1, 2, ..., 12 you are interested in<BR>
+`yearOverride`: The numerical year 2019, ... you are interested in<BR>
+
   - Find the box **Tags**
     - Enter a key = `Owner` and a corresponding value = your IAM User name
       - This associates the Lambda with you
