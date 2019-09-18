@@ -10,8 +10,6 @@ accountnumber = os.environ['accountnumber']
 bucketname = os.environ['bucketname']
 snstopic = os.environ['snstopic']
 friendlyaccountname = os.environ['friendlyaccountname']
-dayintervalStart = os.environ['dayintervalStart']
-dayintervalEnd = os.environ['dayintervalEnd']
 
 # for month-specific analysis
 override = os.environ['override']
