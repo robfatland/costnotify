@@ -94,6 +94,7 @@ def lambda_handler(event, context):
 
         else:
             today      = datetime.datetime.now()
+            print(today)
             endDay      = today - datetime.timedelta(days = 1)
             dayOfMonth  = endDay.day
             monthString = '{:02d}'.format(endDay.month)
@@ -125,8 +126,8 @@ def lambda_handler(event, context):
         
         print("compare: daily cost list has length =", len(costByDay), 'versus day of month =', dayOfMonth)
         
-        if not len(costByDay) == dayOfMonth: 
-            return("logic fail nDaysInferred vs dayOfMonth: " + str(len(costByDay)), dayOfMonth)
+        # if not len(costByDay) == dayOfMonth: 
+        #     return("logic fail nDaysInferred vs dayOfMonth: " + str(len(costByDay)), dayOfMonth)
         
         with open('/tmp/' + csv_filename, 'r', newline = '\n') as csvfile:
             lines = csv.reader(csvfile, delimiter=',', quotechar='"')
