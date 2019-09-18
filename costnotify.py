@@ -167,7 +167,7 @@ def lambda_handler(event, context):
         
         # Use ComposeMessage() to assemble the body of the email message
         email_subject = '$' + mostRecentDayBillString  + ' AWS ' + friendlyaccountname
-        email_body    = 'This month to date: $' + monthBillString + '\n\nBy day:\n\n'
+        email_body    = 'Daily for month: $' + monthBillString + '\n\nBy day:\n\n'
         for idx, entry in enumerate(costByDay): email_body += str(idx + 1) + ': ' + str(entry) + '\n'
         email_body += '\n\n'
         
