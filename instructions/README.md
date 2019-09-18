@@ -139,7 +139,7 @@ means of an "ARN string" that refers to the topic.
 - Go to the Lambda services page and select the **N. Virginia** region at the upper right
 - Create a new Lambda function: Choose to author it from scratch
 - Name it `costnotify`
-- Choose the Python 3.6 runtime
+- Choose the Python 3.7 runtime (or higher; most recent is the point)
 - Choose the role from step 1 above called `costnotify`
 - Click **Create function** at lower right
   - 'congrats' message at the top of your new Lambda page
