@@ -63,11 +63,13 @@ def lambda_handler(event, context):
 
     # a bucket object we will use to access the billing log files
     s3 = boto3.client('s3')
-    BlendedCostIndex = 18
+    BlendedCostIndex  = 18
     UsageEndDateIndex = 15
+    ProductNameIndex  =  5
     costByDay     = []                           # Day 0 = 1st dat of the month, etcetera
     datetimeByDay = []                           # datetimes at midnight (Zulu?) for days of the month
     costByService = []                           # Not implemented and should probably be a dictionary, not a list
+    nameByService = []
 
     leapyears = [2000, 2004, 2008, 2012, 2016, 2020, 2024, 2028, 2032, 2036, 2040, 2044, 2048]
     daysPerMonth = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
@@ -107,6 +109,7 @@ def lambda_handler(event, context):
             datetimeByDay.append(endDay - datetime.timedelta(days = dayOfMonth - i))
             costByDay.append(0.)
         
+
         monthlyBillingFile = accountnumber +                                  \
             '-aws-billing-detailed-line-items-with-resources-and-tags-' +     \
             yearString + '-' + monthString + '.csv.zip'
@@ -139,11 +142,21 @@ def lambda_handler(event, context):
                     
                 # otherwise accrue this cost to the total monthly bill and daily itemization
                 else:
+                    # by date aggregator
                     nTotalItems += 1
                     itemCost = float(line[BlendedCostIndex])
                     monthBill += itemCost
                     itemEndTime = datetime.datetime.strptime(line[UsageEndDateIndex], '%Y-%m-%d %H:%M:%S')
                     itemDayIndex = int(itemEndTime.day) - 1
+                    
+                    # by product name aggregator
+                    thisProductName = line[ProductNameIndex]
+                    if thisProductName in nameByService:
+                        thisProductIndex = nameByService.index(thisProductName)
+                        costByService[thisProductIndex] += itemCost
+                    else:
+                        nameByService.append(thisProductName)
+                        costByService.append(itemCost)
 
                     if itemDayIndex >= len(costByDay):
                         print("logic error: item exceeds allowed day range")
@@ -167,8 +180,12 @@ def lambda_handler(event, context):
         
         # Use ComposeMessage() to assemble the body of the email message
         email_subject = '$' + mostRecentDayBillString  + ' AWS ' + friendlyaccountname
-        email_body    = 'Month ' + monthString + ' ' + yearString + ' $' + monthBillString + '\nBy day:\n\n'
+        email_body    = 'Month ' + monthString + ' ' + yearString + ' $' + monthBillString + '\n\nBy day:\n\n'
         for idx, entry in enumerate(costByDay): email_body += str(idx + 1) + ', ' + '%.2f' % entry + '\n'
+        email_body += '\n\n'
+        
+        email_body += 'Cost by service/product:\n\n'
+        for idx, entry in enumerate(costByService): email_body += nameByService[idx] + ', ' + '%.2f' % entry + '\n'
         email_body += '\n\n'
         
         # This is a faster way to debug (you don't wait for email_body to arrive via email)
