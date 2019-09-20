@@ -167,8 +167,8 @@ def lambda_handler(event, context):
         
         # Use ComposeMessage() to assemble the body of the email message
         email_subject = '$' + mostRecentDayBillString  + ' AWS ' + friendlyaccountname
-        email_body    = 'Month: $' + monthBillString + '\n\nBy day:\n\n'
-        for idx, entry in enumerate(costByDay): email_body += str(idx + 1) + ': ' + '%.2f' % entry + '\n'
+        email_body    = 'Month $' + monthBillString + '\n\nBy day:\n\n'
+        for idx, entry in enumerate(costByDay): email_body += str(idx + 1) + ', ' + '%.2f' % entry + '\n'
         email_body += '\n\n'
         
         # This is a faster way to debug (you don't wait for email_body to arrive via email)
