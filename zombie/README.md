@@ -246,3 +246,70 @@ Another question: Suppose I do both Create AMI on the EC2 and Create Snapshot on
 Does this create two snapshots of this one volume, one with and one without the AMI metadata? In other 
 words: The snapshot is redundant and unnecessary once the Create AMI is successful; and should 
 therefore be deleted. 
+
+
+
+### Joel writes back inline answers
+
+- Size = 1024GB. Am I charged 1024 x 5 cents per month? Or less due to actual-use and zip compression? How to find this out? 
+
+> Less, but frustratingly it is not possible to see the actual size of the snapshot.
+
+-  Description = Created by CreateImage(i-0f99etcetera) for ami-0b251etcetera: Implies this snapshot is actually the basis for an AMI where the "AMI aspect" is some additional metadata stored under AMIs 
+
+> Yes, AMIs are based on Snapshots, but contain extra data with instructions on how to launch and EC2 instance using the Snapshot.
+
+- Started = October 27, 2018 etc: First snapshot but does not indicate latest update 
+
+> A Snapshot won’t be updated. Instead, subsequent snapshots are listed on their own but are based on the 
+first snapshot. You can delete the first snapshot of a volume if the only one you really need is the third 
+or fourth etc. https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSSnapshots.html#how_snapshots_work
+
+ 
+
+ 
+
+Then for the selected Snapshot down below in the Description / Perm / Tags tabs:  
+
+- Volume with link: If I go to the link and No Volumes Found then the EBS volume itself has been deleted; so that is good info
+
+- Description includes the AMI which I can look up; and there I find both a Name and an AMI Name. So this is my final clue. 
+
+ 
+
+Here's where you can check my conclusions: 
+
+ 
+
+> Yes these snapshots are the "guts" of an AMI. Their actual size and therefore actual billing cost is not available 
+through the console but I might be able to find it listed in CloudCheckr billing records. Similarly I have no way of 
+knowing when this snapshot was last updated. Hence: The only way I can determine if these snapshots are "worth 
+keeping around" is to check the tags on the AMI and see if that leads me to a person; and then check with them. 
+Otherwise deleting these snapshots is basically taking the chance that they are abandoned resources. I at least 
+know that the maximum amount they can cost is 5 cents per GB per month. 
+
+
+> Since snapshots are not “updated”, if you only want the most recent you can delete all snapshots for the volume which are dated earlier. If you go to the Snapshots page you can then filter by the volume ID which will show you all the snapshots made for that volume. All snapshots that are part of an AMI will indicate so in the description. It is of course possible to take a direct EBS Snapshot of a volume and also create an AMI from the instance to which the volume is attached. In that case there will be two snapshots for the volume listed: one that is an independent EBS snapshot and one that is tied to the AMI.
+
+
+
+
+
+
+
+### Joel writes back directly on AMIs and Snapshots
+
+
+Answered your previous questions inline [above]. When you create an AMI, it will by default include all volumes 
+attached to the instance. If you want everything an EC2 instance has, then you can simply make an AMI. When 
+you later launch an EC2 instance from the AMI, it will also create clones of any attached volumes on the original. 
+You have the option to not include any volumes but the root volume when taking an AMI. This is useful if you 
+want to create new EC2 instances but you don’t need any data from the extra volumes on the original. Customers 
+will often take AMIs infrequently since the root volume with the OS and applications doesn’t change much, but 
+more frequently take EBS snapshots of the data volumes since the data on them changes more frequently. If you 
+want to be able to create EBS volumes populated with data but don’t care about the root volume, then take a 
+direct Snapshot. If you want a full system from which you can launch EC2 instances then take an AMI. If you 
+want to manage data volumes and a system image separately, then uncheck the option to include all attached 
+volumes when you create an AMI. What it comes down to is Snapshots can create EBS volumes, and AMIs create 
+EC2 instances. As a side note, if you had an EBS Snapshot of a root volume and the OS is Linux, you can 
+create an AMI out of it.
