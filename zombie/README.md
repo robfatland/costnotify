@@ -281,7 +281,7 @@ Here's where you can check my conclusions:
 
  
 
-> Yes these snapshots are the "guts" of an AMI. Their actual size and therefore actual billing cost is not available 
+Rob thinks: Yes these snapshots are the "guts" of an AMI. Their actual size and therefore actual billing cost is not available 
 through the console but I might be able to find it listed in CloudCheckr billing records. Similarly I have no way of 
 knowing when this snapshot was last updated. Hence: The only way I can determine if these snapshots are "worth 
 keeping around" is to check the tags on the AMI and see if that leads me to a person; and then check with them. 
@@ -289,12 +289,10 @@ Otherwise deleting these snapshots is basically taking the chance that they are 
 know that the maximum amount they can cost is 5 cents per GB per month. 
 
 
+Joel responds: 
+
+
 > Since snapshots are not “updated”, if you only want the most recent you can delete all snapshots for the volume which are dated earlier. If you go to the Snapshots page you can then filter by the volume ID which will show you all the snapshots made for that volume. All snapshots that are part of an AMI will indicate so in the description. It is of course possible to take a direct EBS Snapshot of a volume and also create an AMI from the instance to which the volume is attached. In that case there will be two snapshots for the volume listed: one that is an independent EBS snapshot and one that is tied to the AMI.
-
-
-
-
-
 
 
 ### Joel writes back directly on AMIs and Snapshots
