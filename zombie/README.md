@@ -1,13 +1,17 @@
 # Welcome Zombie Hunters
 
+
 Our first idea is to seek out and tidy up resources associated with EC2 instances. These are machines (computers) that we 
 rent by the hour from the cloud provider, in this case from Amazon Web Services. 
 
 
-The first thing we will do is provide a framework for how these things work. Then we will provide a process to go through
-to cull down the zombies. 
+The first thing we will do is provide a framework for how these things work. Then we will provide a brief remark on 
+***Tagging*** followed by a procedural for culling back the zombies.  This is followed by some email excerpts with 
+Joel at AWS as I am trying to sort out the details.
+
 
 ## Framework
+
 
 An EC2 instance is originally requested and granted. It comes with some small amount of disk space, typically like 8GB. 
 That is where the operating system lives; and there is some space left over for the User. We'll call this the root drive.
@@ -42,7 +46,105 @@ into a zombie.
   - They are not in use; just sitting there
 - In the console the EBS volumes can be ***Detached***: Select the volume, then use the **Actions** dropdown to **Detach volume**
   - Once they are detached they don't cost anything, right?
-  - Wrong. They still cost the same: 
+  - Wrong. They still cost the same: $0.10 per GB per month
+- In the console for **Volumes** select an EBS volume then Action > Create Snapshot
+  - The volume will be compressed to minimal size and stored at that size for $0.05 / GB / month
+- In the console for **Instances** select an EC2 instance then Action > Image > Create Image
+  - As with volume snapshots the root volume will be compresed and stored as an AMI (which includes a snapshot)
+  - This also costs $0.05 per GB per month
+- Once the snapshots and AMIs are created: Delete the volumes so they no longer cost money
+
+
+It bears repeating: An AMI is a short description of the EC2 instance plus a snapshot of the root volume. This means
+that we do not have to snapshot the root volume in addition to making an AMI. The AMI includes the snapshot so just do 
+that. However for additional attached drives we need one snapshot of each. 
+
+
+> It is also much cheaper to store things in object storage; so there is another step possible here that I won't go
+into in detail. The idea would be to create a zip file of all the data on the large EBS volume or volumes and move that
+to object storage which costs $0.023 per GB per month; so less than half as much as a snapshot. Then delete that data 
+from the EBS volume and *then* make the snapshot if it is still needed. From there we can even move the data from 
+object storage to archival which gets us another factor of six cost savings; but this makes sense only if we do not plan
+to use the data for some time. 
+
+
+## Tagging
+
+
+Each item (EC2, Volume, AMI, Snapshot) has a ***Name***. For example the first EC2 instance in the table I
+am looking at has Name = CAHW_notebook. This was launched on Nov 20 2018 (almost a year ago) and it is currently
+stopped. The first thing I do is edit this Name by hovering over it to select the pencil. I change the name from
+*CAHW_notebook* to *Elsa CAHW_notebook DNT Rob*. Why? First I happen to know that *Elsa* is the person associated
+with this EC2 instance; so now her name is foremost for future reference. Second I preserve the project name 
+CAHW_notebook so we know what the machine was for. Third I put in 'DNT Rob' to mean "Do Not Terminate / Rob was here". 
+Now future reviews of this resource will have a basis for figuring out what to do with it; and hopefully nobody will
+just randomly Terminate the instance. Notice that we have the capacity to tag a lot of resources. I find 46 Instances,
+46 Volumes, 38 AMIs and 103 Snapshots. Out of all these resources only 3 Instances are currently running; so there
+is a great potential for cleaning up the zombies.
+
+
+## Procedure
+
+- Log in to the AWS console
+- Under Services (upper left) choose EC2 and make sure your Region (upper right) is set to Oregon
+- Copy the URL and open three more tabs, pasting that URL in to the address bar each time
+  - You now have four browser tabs connected to EC2. Each will go to a different EC2 sub-page
+- Choose (left side-bar) Instances for your first tab
+- Choose Volumes for your second tabl
+- Choose AMIs for your third tab
+- Choose Snapshots for your fourth tab
+
+
+We will proceed to work our way through Instances, Volumes, AMIs and Snapshots
+
+
+### Part 0: Reminder on tagging
+
+
+If you have seen it once it bears repeating: Consider re-reading the section above on ***Tagging***
+before going further.
+
+
+### Part 1: Instances and Volumes
+
+- If an instances is Stopped it is a candidate for Termination once it has been backed up as an AMI
+- If an instance is Running it should be allowed to keep running but with an email sent to the owner
+
+### 1.1 Tagging Instances and Volumes
+
+Each instance should be tagged with **some-name project DNT your-name** as a temporary measure. This
+ensures that the instance won't be terminated (we hope) without good cause. Remember that **some-name**
+is the name of the person who was using the instance (if available) and **project** is the research 
+project associated with that work. 
+
+In parallel all of the Volumes associated with these Instances should be tagged in the exact same manner.
+If the Volume is in-use then it will be obvious where it is attached: See the Attachment information which
+will hyperlink directly to the EC2. Rather than use **DNT** in the tag I prefer **DND** for Do Not Delete. 
+
+What about instances or volumes that are clearly derelict? If you are certain that they have no possible 
+value to anyone; and particularly if they are not labeled or labeled in ambiguous fashion: Go ahead and delete 
+them.  
+
+
+### 1.2 Making AMIs and snapshots
+
+
+### 1.3 Sending Grim Reaper emails
+
+
+Here is where the tagging pays off. You send email to the person listed as the owner of the resource 
+inviting them to evaluate its use. Either they do not respond... or they say "go ahead and delete it"...
+or they request it be preserved.
+
+
+### 2.1 Sorting out AMIs and Snapshots
+
+As with the previous phase: Tag everything that has value...
+
+...and for resources that are not traceable, that are ancient, that have no 
+
+
+
 
 
 
