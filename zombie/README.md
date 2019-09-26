@@ -85,8 +85,26 @@ is a great potential for cleaning up the zombies.
 
 ## AMI Generation
 
-The task here is to create a minimal-cost image of a work environment. To justify the procedure let's do an 
-experiment in which we get two machines...
+The task here is to create a minimal-cost image of a work environment. Let's do an 
+experiment where we get two machines, put some precious data on them both, and then use two procedures 
+to shut them down. Can we recover the precious data in both cases? Very simple experiment. 
+
+
+Once the machines are running (I tagged them A and B) I want to log in to set up the test data.
+From a bash shell in the same directory as the `.pem` key file, and knowing the machine URL from
+the console (pretend it is `112.223.224.225`) 
+and also knowing that (since the OS is Ubuntu) the Username is ubuntu...
+
+```
+cd wherever_the_key_sits
+mv TheKey.pem ~
+cd
+chmod 400 TheKey.pem
+ssh -i TheKey.pem ubuntu@112.223.224.225
+```
+
+The first four lines are necessary on my machine to get the PEM file with the correct permissions
+so that the `ssh` command runs properly. 
 
 
 ## Procedural
