@@ -85,6 +85,18 @@ is a great potential for cleaning up the zombies.
 
 ## AMI Generation
 
+
+### Short summary
+
+If you **Stop** and then **Terminate** an instance there is no trace of it remaining; it is lost. You
+are obliged to create an AMI. In so doing take care to include any and all attached volumes. Each volume
+will correspond to a snapshot; and Launching an AMI will be default include all snapshots of all attached
+volumes in the resulting EC2; but these must be re-mounted.
+
+
+### Extended narrative
+
+
 The task here is to create a minimal-cost image of a work environment. Let's do an 
 experiment where we get two machines, put some precious data on them both, and then use two procedures 
 to shut them down. Can we recover the precious data in both cases? Very simple experiment. 
@@ -156,9 +168,67 @@ ubuntu@ip-122-233-244-255:~$ sudo cp ~/gold.txt ./silver.txt
 
 Now we can log out from this machine and do the exact same thing on the second machine.
 
+Are we charged for a stopped EC2 instance? The answer is 'No' but probably 'Yes' for storing the image of 
+the machine so that it can be re-started. This implies an AMI is created but is not accessible in the default
+configuration. 
+
+***It is the case that Instance A vanished from sight on Termination whereas Instance B is backed up
+by an AMI; and there are two 8GB Snapshots associated with Instance B.***
+
+### Reviving Instance B
+
+Selecting the AMI we take Action **Launch** and go through the 7-or-so steps as if we were launching an EC2
+normally. Here are some notes on this process.
+
+- The instance type is pre-selected at free tier, not the type of instance we had before
+- At Step 4: Add Storage the second EBS Volume is pre-listed; so the system "knows" about that
+- Step 7: Review Instance Launch refers to the source AMI and the 2 volumes 'root + data'
+- The access Key is selected, not given as a default; so this is a good decouple feature
+
+Upon logging in I can see the second volume using `lsblk` and the command `sudo file -s /dev/xvdb`
+shows that this is already a file system; not just "data". So I do not format it! Otherwise all the
+data in the volume are lost. These data is still preserved in the Snapshot; however it would be 
+inconvenient to have to re-do this. Since the `/data` directory is present I simply issue 
+`sudo mount /dev/xvdb /data` and there in `/data` is my valuable data file. 
+
+
+Now we have a convincing example that AMIs must be intentionally generated but happily do bring
+back the system as it was before.
 
 
 ## Procedural
+
+
+Here are the zombies we want to eliminate:
+
+
+* IAM Users
+  - Should not include folks who are no longer associated with the account
+  - Should have a policy appropriate to their intended work; not blanket *admin*
+* NAT Gateways (under VPC (Virtual Private Cloud)) cost $0.045 per hour
+* EC2 Instances
+  - If they are actively being used: Should be tagged and managed so as not to incur undue cost
+  - Otherwise: Should be backed up as AMIs and Terminated
+* EBS Volumes
+  - If in productive use: Should be tagged and noted by cost; at $0.10 / GB / month
+  - Otherwise: Should be converted to Snapshot, then Detached, then Deleted
+    - ***In Use*** and ***Available*** states both cost the above amount
+    - Snapshot costs half that at $0.05 / GB / month
+    - S3 storage is $0.023 / GB / month
+    - Glacier archival storage is $0.004 / GB / month, 1/25th the cost of an EBS Volume
+* AMI Images
+  - If backing up current research: Maintain at $0.05 / GB / month
+    - Note this cost is applied to *compressed* image size, not the *stated* image size
+  - Otherwise stale AMIs should be deleted from the account
+* Snapshots
+  - Work from AMIs to identify root volume Snapshots
+  - Keep Snapshots that have current merit; and delete stale Snapshots from the account
+
+There are two other expensive resources on AWS: Databases and S3 Object Storage files.
+
+
+Here are some procedural notes...
+
 
 - Log in to the AWS console
 - Under Services (upper left) choose EC2 and make sure your Region (upper right) is set to Oregon
