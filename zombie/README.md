@@ -149,7 +149,7 @@ Next:
 
 ```
 ubuntu@ip-122-233-244-255:~$ sudo mkdir /data
-ubuntu@ip-122-233-244-255:~$ sudo mount /dev/xvdb/ /data
+ubuntu@ip-122-233-244-255:~$ sudo mount /dev/xvdb /data
 ubuntu@ip-122-233-244-255:~$ cd /data
 ubuntu@ip-122-233-244-255:~$ sudo cp ~/gold.txt ./silver.txt
 ```
