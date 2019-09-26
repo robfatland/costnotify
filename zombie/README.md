@@ -101,10 +101,61 @@ mv TheKey.pem ~
 cd
 chmod 400 TheKey.pem
 ssh -i TheKey.pem ubuntu@112.223.224.225
+
+ubuntu@ip-122-233-244-255:~$ vi gold.txt
 ```
 
-The first four lines are necessary on my machine to get the PEM file with the correct permissions
-so that the `ssh` command runs properly. 
+The first four lines above are necessary on my machine to get the PEM file with the correct 
+permissions so that the `ssh` command runs properly. That is: `ssh` wants the PEM file to be
+0400 so it is more secure. 
+
+
+The ssh command put me on the AWS machine command line. I edited the file gold.txt to create
+some content of "great value". That file ended up being about 50MB. Below I will also copy it
+to the second EBS volume under the name `silver.txt`. 
+
+
+Next: When configuring the machine I attached a second EBS Volume of 8GB; so let's mount that EBS volume on this machine.
+
+
+```
+ubuntu@ip-122-233-244-255:~$ lsblk
+
+NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+loop0     7:0    0 88.5M  1 loop /snap/core/7270
+loop1     7:1    0   18M  1 loop /snap/amazon-ssm-agent/1455
+xvda    202:0    0    8G  0 disk
+└─xvda1 202:1    0    8G  0 part /
+xvdb    202:16   0    8G  0 disk
+```
+
+That bottom line `xvdb` is our un-formatted un-attached 8GB volume.
+
+```
+ubuntu@ip-122-233-244-255:~$ sudo file -s /dev/xvdb
+
+/dev/xvdb: data
+```
+
+This is an empty volume so we make a file system. If we do this on a data that already has content that content 
+will be erased.
+
+```
+ubuntu@ip-122-233-244-255:~$ sudo mkfs -t xfs /dev/xvdb
+```
+
+And now `sudo file -s /dev/xvdb` will return meaningful details (not just "data"); so we have a filesystem to mount. 
+Next:
+
+```
+ubuntu@ip-122-233-244-255:~$ sudo mkdir /data
+ubuntu@ip-122-233-244-255:~$ sudo mount /dev/xvdb/ /data
+ubuntu@ip-122-233-244-255:~$ cd /data
+ubuntu@ip-122-233-244-255:~$ sudo cp ~/gold.txt ./silver.txt
+```
+
+Now we can log out from this machine and do the exact same thing on the second machine.
+
 
 
 ## Procedural
