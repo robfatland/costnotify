@@ -5,8 +5,9 @@ Our first idea is to seek out and tidy up resources associated with EC2 instance
 rent by the hour from the cloud provider, in this case from Amazon Web Services. 
 
 
-The first thing we will do is provide a framework for how these things work. Then we will provide a brief remark on 
-***Tagging*** followed by a procedural for culling back the zombies.  This is followed by some email excerpts with 
+The first thing we will do is provide a ***Framework*** for how these things work. Then we will provide a brief remark on 
+***Tagging*** and another on ***AMI Generation*** followed by a ***Procedural*** for culling back the zombies.  This is 
+followed by some email excerpts with 
 Joel at AWS as I am trying to sort out the details.
 
 
@@ -82,8 +83,13 @@ just randomly Terminate the instance. Notice that we have the capacity to tag a 
 46 Volumes, 38 AMIs and 103 Snapshots. Out of all these resources only 3 Instances are currently running; so there
 is a great potential for cleaning up the zombies.
 
+## AMI Generation
 
-## Procedure
+The task here is to create a minimal-cost image of a work environment. To justify the procedure let's do an 
+experiment in which we get two machines...
+
+
+## Procedural
 
 - Log in to the AWS console
 - Under Services (upper left) choose EC2 and make sure your Region (upper right) is set to Oregon
