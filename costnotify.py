@@ -101,7 +101,7 @@ def lambda_handler(event, context):
             yearString  = '{:04d}'.format(endDay.year)
 
         # Example 1: override is 'True' and monthOverride is string '4' and yearOverride is string '2019'
-        #   Integer values are 4 and 2019. dayOfMonth will be daysPerMont[4] = 30. endDay will be datetime 30-APR-2019.
+        #   Integer values are 4 and 2019. dayOfMonth will be daysPerMonth[4] = 30. endDay will be datetime 30-APR-2019.
         # Example 2: Today is September 14 2019
         #   endDay = yesterday's date (a datetime) so dayOfMonth = 13
         # In both cases the range(0, dayOfMonth) will index 0, 1, 2, ..., dayOfMonth - 1
