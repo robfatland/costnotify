@@ -36,6 +36,17 @@ There are four AWS services attached to the costnotify Lambda function:
 * CloudWatch Logs enables debugging; output of Lambda execution
 * SNS (Simple Notification Service) to distribute the **costnotify** message to subscribers
 
+## AWS Billing Notebook
+
+A notebook to act as an interactive extension of costnotify and mirror the methods used on the
+<a href="https://github.com/pangeo-data/gcp-billing">
+	Google Cloud Platform
+</a>
+side of Pangeo. The notebook should be runnable for anyone on the us-east-1 Pangeo JupyterHub. It should also be usable for anyone who has configured the AWS CLI and is an admin on the project.
+
+Running the notebook as-is will find all the billing files in the bucket and download all of them. There is a possibility that they could just be read into memory and worked with there, but downloading is easier for now.
+
+There are a few convenient functions in the notebook for common visualizations: cost by day and cost by month. There is also a line of code to show a table of itemized costs over the time period you select.
 
 ## Prep
 
