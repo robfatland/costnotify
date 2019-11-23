@@ -48,6 +48,16 @@ Running the notebook as-is will find all the billing files in the bucket and dow
 
 There are a few convenient functions in the notebook for common visualizations: cost by day and cost by month. There is also a line of code to show a table of itemized costs over the time period you select.
 
+There are two versions of the notebook. The 
+<a href="https://github.com/robfatland/costnotify/blob/master/aws_billing_notebook.ipynb">
+	base version
+</a>
+of the notebook uses Boto3 to read in the data and Pandas / Matplotlib to visualize it. The 
+<a href="https://github.com/robfatland/costnotify/blob/master/aws_billing_notebook_with_hvplot_s3fs.ipynb">
+	newer version
+</a>
+uses s3fs to read in the data and hvplot on top of Pandas / Matplotlib for visualization.
+
 ## Prep
 
 
