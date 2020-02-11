@@ -81,7 +81,7 @@ def lambda_handler(event, context):
         s3_resource = boto3.resource('s3')
         key = csv_file_list['Contents'][1]['Key']    # this is a string
         
-        if override in ['True', 'true', '1', 'yes']:
+        if override in ['True', 'true', 'TRUE', '1', 'yes', 'Yes', 'YES']:
             monthOverride_int = int(monthOverride)
             yearOverride_int = int(yearOverride)  
             if monthOverride_int < 1 or monthOverride_int > 12: return 'bad month override'
