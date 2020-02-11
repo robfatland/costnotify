@@ -1,4 +1,5 @@
-***Status: This is a re-build of an earlier solution. The software is in development (13-AUG-2019) and not yet stable, about 80% of the way to being useful.***
+***Status: This is a functional solution oriented towards a specific billing accumulator (DLT using Cloudcheckr).
+It can be improved in that context and it could be adapted to other billing accumulators.***
 
 
 # costnotify
