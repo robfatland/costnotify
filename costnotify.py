@@ -10,8 +10,9 @@ accountnumber = os.environ['accountnumber']
 bucketname = os.environ['bucketname']
 snstopic = os.environ['snstopic']
 friendlyaccountname = os.environ['friendlyaccountname']
+daysbackfromtoday = os.environ['daysbackfromtoday']
 
-# for month-specific analysis
+# for monthly analysis
 override = os.environ['override']
 monthOverride = os.environ['monthOverride']
 yearOverride = os.environ['yearOverride']
@@ -79,8 +80,9 @@ def lambda_handler(event, context):
         # the S3 bucket 'bucketname' contains the billing files
         csv_file_list = s3.list_objects(Bucket = bucketname) # ...a list of dictionaries, one per monthly log file
         s3_resource = boto3.resource('s3')
-        key = csv_file_list['Contents'][1]['Key']    # this is a string
-        
+        key = csv_file_list['Contents'][1]['Key']            # this is a string
+
+        # boolean override tells the Lambda to run an entire month (selected in environ vars)
         if override in ['True', 'true', 'TRUE', '1', 'yes', 'Yes', 'YES']:
             monthOverride_int = int(monthOverride)
             yearOverride_int = int(yearOverride)  
@@ -92,6 +94,7 @@ def lambda_handler(event, context):
             monthString = '{:02d}'.format(endDay.month)
             yearString = '{:04d}'.format(endDay.year)
 
+        # usual business: generate a report for one day, recent as possible
         else:
             today      = datetime.datetime.now()
             print(today)
@@ -108,7 +111,6 @@ def lambda_handler(event, context):
         for i in range(dayOfMonth):
             datetimeByDay.append(endDay - datetime.timedelta(days = dayOfMonth - i))
             costByDay.append(0.)
-        
 
         monthlyBillingFile = accountnumber +                                  \
             '-aws-billing-detailed-line-items-with-resources-and-tags-' +     \
@@ -135,8 +137,8 @@ def lambda_handler(event, context):
             
             for idx, line in enumerate(lines):
                 
-                # this if pulls column labels mapped to integers
-                #   cf mapping comment at top of this file
+                # For the first row: map column labels to integers
+                #   see the extended comment at top of this file
                 if idx == 0:
                     for i, n in enumerate(line): column_dictionary.update({n.strip(): i})
                     
@@ -149,7 +151,7 @@ def lambda_handler(event, context):
                     itemEndTime = datetime.datetime.strptime(line[UsageEndDateIndex], '%Y-%m-%d %H:%M:%S')
                     itemDayIndex = int(itemEndTime.day) - 1
                     
-                    # by product name aggregator
+                    # name aggregate by product type
                     thisProductName = line[ProductNameIndex]
                     if thisProductName in nameByService:
                         thisProductIndex = nameByService.index(thisProductName)
@@ -168,12 +170,12 @@ def lambda_handler(event, context):
                         
         print("Cost entries:", nTotalItems)
         
-        # either dayOfMonth == 1 or dayOfMonth == 2, 3, 4, ..., 28 or 29 or 30 or 31
-        #   if first case: Then there is no 'yesterday' this month so the total is zero
-        #   if second case: Then the day before today is dayOfMonth - 1 which in turn has an index
-        #     (dayOfMonth - 1) - 1. That is why we have the '- 2'.
-        if dayOfMonth < 3: mostRecentDayBill = 0.           
-        else:              mostRecentDayBill = costByDay[dayOfMonth - 3]
+        # We want to sum yesterday... but cloudcheckr accumulation is accurate only after 2 or 3 days.
+        #   This code tries to look as recently as possible using the environmental variable 'daysbackfromtoday'.
+        #     The Lambda seems to work well with value 3; and possibly value 2. Serious doubt about value = 1.
+        #   At the moment if we are too close to the start of the month this just gives up and returns zero.
+        if dayOfMonth < daysbackfromtoday: mostRecentDayBill = 0.           
+        else:                              mostRecentDayBill = costByDay[dayOfMonth - daysbackfromtoday]
 
         mostRecentDayBillString = '%.2f' % mostRecentDayBill
         monthBillString = '%.2f' % monthBill
@@ -187,8 +189,10 @@ def lambda_handler(event, context):
         email_body += 'Cost by service/product:\n\n'
         for idx, entry in enumerate(costByService): email_body += nameByService[idx] + ', ' + '%.2f' % entry + '\n'
         email_body += '\n\n'
-        
-        # This is a faster way to debug (you don't wait for email_body to arrive via email)
+        email_body += 'total items so far for this month: ' + str(nTotalItems) + '\n'
+        email_body += '\n\n'
+       
+        # for debugging in the console...
         print(email_subject + '\n\n' + email_body)
         
         # "publish to SNS Topic" translates to "send email to the SNS distribution list"    
