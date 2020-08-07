@@ -102,6 +102,7 @@ def lambda_handler(event, context):
             dayOfMonth  = endDay.day
             monthString = '{:02d}'.format(endDay.month)
             yearString  = '{:04d}'.format(endDay.year)
+            daysbackfromtoday_int = int(daysbackfromtoday)
 
         # Example 1: override is 'True' and monthOverride is string '4' and yearOverride is string '2019'
         #   Integer values are 4 and 2019. dayOfMonth will be daysPerMonth[4] = 30. endDay will be datetime 30-APR-2019.
@@ -174,8 +175,8 @@ def lambda_handler(event, context):
         #   This code tries to look as recently as possible using the environmental variable 'daysbackfromtoday'.
         #     The Lambda seems to work well with value 3; and possibly value 2. Serious doubt about value = 1.
         #   At the moment if we are too close to the start of the month this just gives up and returns zero.
-        if dayOfMonth < daysbackfromtoday: mostRecentDayBill = 0.           
-        else:                              mostRecentDayBill = costByDay[dayOfMonth - daysbackfromtoday]
+        if dayOfMonth < daysbackfromtoday_int: mostRecentDayBill = 0.           
+        else:                                  mostRecentDayBill = costByDay[dayOfMonth - daysbackfromtoday_int]
 
         mostRecentDayBillString = '%.2f' % mostRecentDayBill
         monthBillString = '%.2f' % monthBill
