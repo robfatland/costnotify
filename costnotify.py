@@ -1,10 +1,4 @@
-import json
-import os
-import boto3
-import zipfile
-import csv
-import datetime
-import urllib
+import json, os, boto3, zipfile, csv, datetime, urllib
 
 accountnumber = os.environ['accountnumber']
 bucketname = os.environ['bucketname']
@@ -46,8 +40,6 @@ Here is the indexing for the 25 columns of the CSV billing file:
 'user:Owner': 23
 'user:Project': 24
 '''
-
-
 
 # this function is the "main program", called whenever the Lambda runs.
 def lambda_handler(event, context):
@@ -202,8 +194,7 @@ def lambda_handler(event, context):
         response      = sns.publish(TopicArn=arnstring, Message=email_body, Subject=email_subject)
 
         return 'costnotify lambda completed (' + \
-               str(response['ResponseMetadata']['HTTPStatusCode']) + \
-               ') on ' + \
+               str(response['ResponseMetadata']['HTTPStatusCode']) + ') on ' + \
                response['ResponseMetadata']['HTTPHeaders']['date']
     
     # ...this runs if something went wrong  
