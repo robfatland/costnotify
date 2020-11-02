@@ -80,11 +80,16 @@ def lambda_handler(event, context):
             yearOverride_int = int(yearOverride)  
             if monthOverride_int < 1 or monthOverride_int > 12: return 'bad month override'
             if yearOverride_int < 2014 or yearOverride_int > 2030: return 'bad year override'
+            
             dayOfMonth = daysPerMonth[monthOverride_int]
             if monthOverride_int == 2 and yearOverride_int in leapyears: dayOfMonth = 29
+            
             endDay = datetime.datetime(yearOverride_int, monthOverride_int, dayOfMonth, 0, 0, 0)
             monthString = '{:02d}'.format(endDay.month)
             yearString = '{:04d}'.format(endDay.year)
+            daysbackfromtoday_int = 0
+            
+            print('ovrrd:', monthOverride_int, yearOverride_int, endDay, monthString, yearString)
 
         # usual business: generate a report for one day, recent as possible
         else:
@@ -98,9 +103,10 @@ def lambda_handler(event, context):
 
         # Example 1: override is 'True' and monthOverride is string '4' and yearOverride is string '2019'
         #   Integer values are 4 and 2019. dayOfMonth will be daysPerMonth[4] = 30. endDay will be datetime 30-APR-2019.
-        # Example 2: Today is September 14 2019
+        # Example 2: override is False and today is September 14 2019
         #   endDay = yesterday's date (a datetime) so dayOfMonth = 13
-        # In both cases the range(0, dayOfMonth) will index 0, 1, 2, ..., dayOfMonth - 1
+        # In both cases endDay is the datetime of the last day of the period of interest.
+        # In both cases the range(dayOfMonth) will index 0, 1, 2, ..., dayOfMonth - 1
         for i in range(dayOfMonth):
             datetimeByDay.append(endDay - datetime.timedelta(days = dayOfMonth - i))
             costByDay.append(0.)
@@ -163,12 +169,15 @@ def lambda_handler(event, context):
                         
         print("Cost entries:", nTotalItems)
         
-        # We want to sum yesterday... but cloudcheckr accumulation is accurate only after 2 or 3 days.
-        #   This code tries to look as recently as possible using the environmental variable 'daysbackfromtoday'.
-        #     The Lambda seems to work well with value 3; and possibly value 2. Serious doubt about value = 1.
-        #   At the moment if we are too close to the start of the month this just gives up and returns zero.
-        if dayOfMonth < daysbackfromtoday_int: mostRecentDayBill = 0.           
-        else:                                  mostRecentDayBill = costByDay[dayOfMonth - daysbackfromtoday_int]
+        # cloudcheckr accumulation is accurate only after 2 or 3 days. This code handles 3 cases to arrive
+        #   at 'what did we spend (2 or 3) days ago?' variable mostRecentDayBill.
+        #   If this is a monthly total (override True; daysbackfromtoday_int set to 0 above): Skip this, set spend = Zero. 
+        #   If we are start of month: The code not written to scan end of previous month: Skip this, set spend = Zero. 
+        #   If this is a daily report and more than a couple days into the month: use 'daysbackfromtoday_int'.
+        if dayOfMonth < daysbackfromtoday_int or daysbackfromtoday_int == 0:
+            mostRecentDayBill = 0.           
+        else:                                  
+            mostRecentDayBill = costByDay[dayOfMonth - daysbackfromtoday_int]  # costByDay is indexed from 0
 
         mostRecentDayBillString = '%.2f' % mostRecentDayBill
         monthBillString = '%.2f' % monthBill
