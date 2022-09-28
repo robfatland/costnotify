@@ -179,11 +179,13 @@ def lambda_handler(event, context):
         else:                                  
             mostRecentDayBill = costByDay[dayOfMonth - daysbackfromtoday_int]  # costByDay is indexed from 0
 
-        mostRecentDayBillString = '%.2f' % mostRecentDayBill
+        mostRecentDayBillString = '$%.2f' % mostRecentDayBill
+        yearExtrapolationString = ' ($%.2f / year)' % (365.25*mostRecentDayBill)
+        accountIdentifierString = ' AWS ' + friendlyaccountname
         monthBillString = '%.2f' % monthBill
         
         # Use ComposeMessage() to assemble the body of the email message
-        email_subject = '$' + mostRecentDayBillString  + ' AWS ' + friendlyaccountname
+        email_subject = mostRecentDayBillString + yearExtrapolationString + accountIdentifierString
         email_body    = 'Month ' + monthString + ' ' + yearString + ' $' + monthBillString + '\n\nBy day:\n\n'
         for idx, entry in enumerate(costByDay): email_body += str(idx + 1) + ', ' + '%.2f' % entry + '\n'
         email_body += '\n\n'
