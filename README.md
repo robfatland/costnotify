@@ -2,6 +2,9 @@
 It can be improved in that context and it could be adapted to other billing accumulators.***
 
 
+**Get started by clicking into the Instructions folder**
+
+
 # costnotify
 
 This repo is instructions and code for building an AWS lambda function *costnotify* to send a spending breakdown 
