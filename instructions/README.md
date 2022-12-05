@@ -15,7 +15,7 @@ Here are some cloud-oriented aspects of this configuration procedure:
 - **policy** is a text document on the AWS cloud that permits or restricts actions
 
 
-## Procedure
+## Procedure Outline
 
 
 - Get an AWS account (context: at U.Washington through DLT send a request to `help@uw.edu`)
@@ -27,8 +27,9 @@ Here are some cloud-oriented aspects of this configuration procedure:
 - Test the Lambda function; and verify the service is running properly
 
 
+## Procedure
 
-## S3 pre-configuration
+### S3 pre-configuration
 
 
 Your AWS account may or may not have CostCheckr service/cost logging enabled. Here we first look around to
@@ -90,7 +91,7 @@ are parsed by the `costnotify` lambda function. Once these files are appearing i
 bucket `copydbr-<ID>` you can continue.
 
 
-## Create a Role for the Lambda function in advance
+### Create a Role for the Lambda function in advance
 
 
 - Log in to the AWS console with admin privileges
@@ -107,11 +108,12 @@ bucket `copydbr-<ID>` you can continue.
 - Create the role
 
 
-## Create an SNS Topic 
+### Create an SNS Topic 
 
 
 This Topic will be referenced by the Python code installed in the Lambda function. This is done by
 means of an "ARN string" that refers to the topic.
+
 
 - Under Services select **Simple Notification Service**
 - Ensure that your region (upper right) is set to **N.Virginia**
@@ -132,7 +134,7 @@ means of an "ARN string" that refers to the topic.
   - Each recipient confirms their subscription by responding to an email (so you should receive one)`
 
 
-## Create the Lambda function
+### Create the Lambda function
 
 
 - Go to the Lambda services page and select the **N. Virginia** region at the upper right
@@ -146,7 +148,7 @@ means of an "ARN string" that refers to the topic.
   - Both tabs are important; for now we stay on the Configuration tab
   
 
-## Configure the `costnotify` Lambda function
+### Configure the `costnotify` Lambda function
 
 
 The following steps are "everything needed" to get the costnotify Lambda working. As you work through this list
