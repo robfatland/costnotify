@@ -29,11 +29,10 @@ Here are some cloud-oriented aspects of this configuration procedure:
 
 ## Procedure
 
-### S3 pre-configuration
+### S3 Configuration and IAM User access
 
 
-Your AWS account may or may not have CostCheckr service/cost logging enabled. Here we first look around to
-see if you are set. If not we proceed to enable service/cost logging. 
+This procedure sets up your DLT AWS account to have CloudCheckr service/cost logging enabled.
 
 
 In the AWS console select **Services** and sub-select **S3** under the **Storage** heading. This should
@@ -55,17 +54,36 @@ If these files are present you are done with this step.
 
 
 If these files and/or this bucket are not
-present: Send an email to OpsCenter at dlt dot com identifying yourself as an administrator and
-ask 'How do I enable cloudcheckr cost logging to an S3 bucket?' In February 2019 the procedure 
-was as outlined below. However this procedure may change so 
-be prepared to make this email enquiry.
+present: Send an email to `OpsCenter at dlt dot com` identifying yourself as an administrator and
+ask 'How do I enable cloudcheckr cost logging to an S3 bucket?' The past procedure is given below.
+However procedures change so be prepared to make an email enquiry.
 
 
 
 * create bucket with a name format like `copydbr-our-unicorn-research`
-* create an IAM account with the appropriate access permission
-    * You attach the following policy to the IAM account
-    * Generate and download IAM User access keys
+    * Details:
+        * I will abbreviate the bucket name as `copydbr-<ID>`
+        * Choose `N.Virginia us-east-1` as the bucket region
+        * Do not copy settings from an existing bucket
+        * Block *all* public access
+        * Disable bucket versioning
+        * Add `Owner` and `Project` tags. The project is `costnotify`
+        * Disable server-side encryption
+        * Create bucket
+    * Note bucket information once it shows up in Amazon S3 > Buckets
+        * Name: **`copydbr-<ID>`**
+        * Region: **`us-east-1`**
+        * ARN: **`arn:aws:s3:::copydbr-<ID>`**
+
+
+* In the AWS console go to the IAM service > Users > Add users
+    * create an IAM account for use by DLT
+        * User name: DLT 
+        * Credential type: Access key
+        * Permissions...
+            * Attach existing policies directly > Create policy (new tab)
+                * **JSON** tab 
+                * Copy-paste the policy shown below into the text box (replacing the example text)
 
 ```
 {
@@ -85,8 +103,10 @@ be prepared to make this email enquiry.
 }
 ```
 
-* Send the IAM User keys to DLT support together with the name of the S3 bucket and the account number
-* DLT should notify you fairly quickly when logging is enabled
+* Provide access to this IAM account to DLT
+    * Generate and download IAM User access keys to a safe location
+    * Send the IAM User keys to DLT support together with the name of the S3 bucket and the account number
+    * DLT should notify you fairly quickly when logging is enabled
 
 
 Billing files are periodically updated (daily) and closed at the end of each month. 
