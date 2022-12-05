@@ -1,43 +1,39 @@
 ## Objective and Supporting Information
 
-This is	a walk-through for installing a daily cost notify email for an AWS account. It is 
-revised 6-AUG-2019 to accommodate the CloudCheckr itemization file format.
+Install **`costnotify`** to receive a daily email tracking AWS account spend.
+There is also a **Test** mode through the AWS console that will generate and send 
+a report for any chosen year/month dating back to when you start this service.
+Here are some cloud-oriented aspects of this configuration procedure:
 
-Further revision September 2019 to allow **Test** mode to send a report for a chosen year/month
-in addition to the standard daily report which summarizes the current month-to-date.
-
-
-- In what follows we try to consistently use `costnotify` as a resource label
-  - Use whatever you like but we suggest keeping it pretty short
-- At UW use *help@uw.edu* for help setting up an AWS account. 
-- Also check out the [UW CSE Database group's AWS page](http://db.cs.washington.edu/etc/aws.html).
-- **DLT** is cloud re-seller that provides AWS accounts to the University of Washington 
-- **Lambda** is code that runs on AWS; sometimes called *serverless* computing. 
-- **SNS**: The AWS Simple Notification Service(SNS) which permits you to format and send emails 
-automatically. In our case this action will be triggered by a Lambda function
-- **S3**: Object storage on AWS, i.e. the place where *objects* are placed and accessed.
-- **tag**: A key-value pair associated with a cloud resource 
-  - **Owner**: A useful tag key where the value is then an IAM User responsible for the resource 
-- **Policy**: A text document on the AWS cloud that permits or restricts actions
+- Consistently use `costnotify` to label resources such as the Lambda function
+- Possible interest: [UW CSE Database group AWS page](http://db.cs.washington.edu/etc/aws.html).
+- **DLT** is the cloud re-seller; think 'liaison to AWS'
+- The AWS Simple Notification Service(SNS) supports sending automated emails 
+- **S3** is Object storage on AWS
+- **tags** are key-value pairs: cloud resource metadata, we assign
+    - **Owner**: Use this key in a tag to identify the person responsible for **`costnotify`**
+- **policy** is a text document on the AWS cloud that permits or restricts actions
 
 
-## Procedure overview
+## Procedure
 
-- If not already done: Create the S3 bucket in your account and turn on expense logging to that bucket
-- Create an IAM Role with some permission Policies. 
-  - This Role permits your Lambda to take action on the AWS cloud
-- Create an SNS Topic with a Subscription pointing at your email
-  - This permits the Lambda to send you a cost notification email
-- Create a Lambda function
-- Configure the Lambda function; add environment variables, code, associated services, etcetera
-- Test the Lambda function
+
+- Get an AWS account (context: at U.Washington through DLT send a request to `help@uw.edu`)
+- Create a dedicated S3 bucket
+- Create an IAM Role with necessary Policies
+- Create an SNS Topic with a Subscription designating your email as recipient
+- Create the `costnotify` Lambda function
+- Configure the Lambda function: Add environment variables, code, etcetera
+- Test the Lambda function; and verify the service is running properly
 
 
 
 ## S3 pre-configuration
 
+
 Your AWS account may or may not have CostCheckr service/cost logging enabled. Here we first look around to
 see if you are set. If not we proceed to enable service/cost logging. 
+
 
 In the AWS console select **Services** and sub-select **S3** under the **Storage** heading. This should
 produce an alphabetized listing of **S3 buckets**. The listing is **Global** (see upper right corner of
@@ -45,10 +41,13 @@ the console) so there is no region to specify. Look for a bucket that would be d
 service/cost logging. In our case these buckets were named `copydbr-<ID>` where `<ID>` is some string that
 identifies this AWS account. 
   
+
 If such a bucket is found: Click on it. An enabled bucket will contain filenames like this: 
 
 
+
 `<accountnumber>-aws-billing-detailed-line-items-with-resources-and-tags-<year>-<month>.csv.zip`
+
 
 
 If these files are present you are done with this step. If these files and/or this bucket are not
