@@ -37,8 +37,8 @@ see if you are set. If not we proceed to enable service/cost logging.
 
 
 In the AWS console select **Services** and sub-select **S3** under the **Storage** heading. This should
-produce an alphabetized listing of **S3 buckets**. The listing is **Global** (see upper right corner of
-the console) so there is no region to specify. Look for a bucket that would be designated for CloudCheckr
+produce an alphabetized listing of **S3 buckets**. The listing is **Global** (upper right corner of
+the console) so no region to specify. Look for a bucket that would be designated for CloudCheckr
 service/cost logging. In our case these buckets were named `copydbr-<ID>` where `<ID>` is some string that
 identifies this AWS account. 
   
@@ -51,17 +51,21 @@ If such a bucket is found: Click on it. An enabled bucket will contain filenames
 
 
 
-If these files are present you are done with this step. If these files and/or this bucket are not
+If these files are present you are done with this step. 
+
+
+If these files and/or this bucket are not
 present: Send an email to OpsCenter at dlt dot com identifying yourself as an administrator and
 ask 'How do I enable cloudcheckr cost logging to an S3 bucket?' In February 2019 the procedure 
-was as outlined below. However this procedure may change so it is best to begin with the email enquiry.
+was as outlined below. However this procedure may change so 
+be prepared to make this email enquiry.
 
 
 
-* create a unique bucket in each account, for example `copydbr-unicorn`
+* create bucket with a name format like `copydbr-our-unicorn-research`
 * create an IAM account with the appropriate access permission
-  * You attach the following policy to the IAM account
-  * Generate and download IAM User access keys
+    * You attach the following policy to the IAM account
+    * Generate and download IAM User access keys
 
 ```
 {
