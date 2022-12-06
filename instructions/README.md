@@ -81,10 +81,17 @@ However procedures change so be prepared to make an email enquiry.
         * User name: DLT 
         * Credential type: Access key
         * Permissions...
-            * Attach existing policies directly > Create policy (new tab)
+            * Attach existing policies directly > Create policy (opens a new tab)
                 * **JSON** tab 
-                * Copy-paste the policy shown below into the text box (replacing the example text)
-                    * This produces an error message: Correct the bucket name entry
+                * Copy-paste the policy shown below into the text box (i.e. replace the example text)
+                * Correct the bucket name entry placeholder to your bucket's name
+            * Add any tags, Review: Name the policy **`costnotify`**
+            * **Create policy**
+        * Return to the Add user tab, hit the refresh button (right side)
+            * Assign the policy created just above called `costnotify` to the IAM User
+            * Tags: Project = costnotify
+            * Review: Create user
+            * Download credentials CSV file to a safe location
 
 ```
 {
