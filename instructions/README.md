@@ -121,14 +121,14 @@ However procedures change so be prepared to make an email enquiry.
         * Twelve-digit AWS account number
     * You have prepared an IAM account and can send them credentials when they are ready
         * This avoids sending credentials 'into the void'
-    * Follow DLT instructions on getting them crednetials
+    * Follow DLT instructions on getting them credentials
 
 
 
-Billing files are periodically updated (daily) and closed at the end of each month. 
-That is: Each billing file corresponds to one month of AWS charges. These are the files that 
-are parsed by the `costnotify` lambda function. Once these files are appearing in
-bucket `copydbr-<ID>` you can continue.
+Note: Once billing is enabled with DLT, monthly record files will be periodically updated.
+They are closed some time after the end of each month. These files are parsed by the 
+**`costnotify`** lambda function described below. Examine the S3 bucket contents to verify that
+the billing files are present.
 
 
 ### Create a Role for the Lambda function in advance
