@@ -84,6 +84,7 @@ However procedures change so be prepared to make an email enquiry.
             * Attach existing policies directly > Create policy (new tab)
                 * **JSON** tab 
                 * Copy-paste the policy shown below into the text box (replacing the example text)
+                    * This produces an error message: Correct the bucket name entry
 
 ```
 {
@@ -94,10 +95,10 @@ However procedures change so be prepared to make an email enquiry.
       "Action": [
       "s3:DeleteObject",
       "s3:GetBucketLocation",
-      "s3:ListObject",
+      "s3:ListBucket",
       "s3:PutObject"
       ],
-      "Resource": ["arn:aws:s3:::your-target-S3-bucket-name-here*"]
+      "Resource": ["arn:aws:s3:::your-target-S3-bucket-name-here"]
   }
  ]
 }
