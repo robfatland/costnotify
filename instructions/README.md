@@ -74,6 +74,7 @@ However procedures change so be prepared to make an email enquiry.
         * Name: **`copydbr-<ID>`**
         * Region: **`us-east-1`**
         * ARN: **`arn:aws:s3:::copydbr-<ID>`**
+        * Twelve-digit AWS account number
 
 
 * In the AWS console go to the IAM service > Users > Add users
@@ -111,10 +112,17 @@ However procedures change so be prepared to make an email enquiry.
 }
 ```
 
-* Provide access to this IAM account to DLT
-    * Generate and download IAM User access keys to a safe location
-    * Send the IAM User keys to DLT support together with the name of the S3 bucket and the account number
-    * DLT should notify you fairly quickly when logging is enabled
+* Contact DLT to inform them 
+    * You want to enable CloudCheckr
+    * Provide the bucket information noted above
+        * Name: **`copydbr-<ID>`**
+        * Region: **`us-east-1`**
+        * ARN: **`arn:aws:s3:::copydbr-<ID>`**
+        * Twelve-digit AWS account number
+    * You have prepared an IAM account and can send them credentials when they are ready
+        * This avoids sending credentials 'into the void'
+    * Follow DLT instructions on getting them crednetials
+
 
 
 Billing files are periodically updated (daily) and closed at the end of each month. 
